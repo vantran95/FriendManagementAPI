@@ -9,9 +9,9 @@ import (
 )
 
 type UserService interface {
-	GetAllUsers() []string
+	GetAllUsers() ([]string, error)
 	CreateUser(emailDto dto.EmailDto) (bool, *exception.Exception)
-	ExistsByEmail(email string) bool
+	ExistsByEmail(email string) (bool, error)
 	FindUserIdByEmail(email string) (int64, error)
 }
 
@@ -19,12 +19,14 @@ type UserAPI struct {
 	UserService UserService
 }
 
+// GetAllUsers retrieve a API to get all users.
 func (u UserAPI) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	users := u.UserService.GetAllUsers()
+	users, _ := u.UserService.GetAllUsers()
 	res := response.Response{Success: true, Friends: users, Count: len(users)}
 	response.SuccessResponse(w, res)
 }
 
+// CreateUser retrieve a API to create user.
 func (u UserAPI) CreateUser(w http.ResponseWriter, r *http.Request) {
 	emailDto := dto.EmailDto{}
 
@@ -37,7 +39,8 @@ func (u UserAPI) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	result, error := u.UserService.CreateUser(emailDto)
 	if error != nil {
-		response.ErrorResponse(w, http.StatusBadRequest, error.Error())
+		response.ErrorResponse(w, http.StatusBadRequest, error.Message)
+		return
 	}
 
 	res := response.Success{Success: result}

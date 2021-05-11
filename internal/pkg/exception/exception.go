@@ -5,10 +5,6 @@ type Exception struct {
 	Message string
 }
 
-func (e Exception) Error() string {
-	panic("Implement me")
-}
-
-func (e Exception) Exception() string {
+func (e *Exception) Exception() string {
 	return e.Message
 }

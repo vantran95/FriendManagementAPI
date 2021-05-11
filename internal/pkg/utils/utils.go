@@ -11,3 +11,13 @@ func IsFormatEmail(email string) bool {
 	}
 	return false
 }
+
+func RemoveItemFromList(list []int64, item int64) []int64 {
+	newList := []int64{}
+	for _, i := range list {
+		if i != item {
+			newList = append(newList, i)
+		}
+	}
+	return newList
+}

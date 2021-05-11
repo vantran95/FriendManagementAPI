@@ -23,7 +23,7 @@ func (f FriendApi) CreateFriend(w http.ResponseWriter, r *http.Request) {
 
 	result, error := f.FriendService.CreateFriend(friendDto)
 	if error != nil {
-		response.ErrorResponse(w, error.Code, error.Error())
+		response.ErrorResponse(w, error.Code, error.Message)
 		return
 	}
 

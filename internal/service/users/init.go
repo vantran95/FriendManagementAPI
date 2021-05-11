@@ -1,10 +1,11 @@
 package users
 
 type Repository interface {
-	GetAllUsers() []string
-	CreateUser(email string) bool
-	ExistsByEmail(email string) bool
-	FindUserIdByEmail(email string) int64
+	GetAllUsers() ([]string, error)
+	CreateUser(email string) (bool, error)
+	ExistsByEmail(email string) (bool, error)
+	FindUserIdByEmail(email string) (int64, error)
+	FindEmailByIds(ids []int64) ([]string, error)
 }
 
 type ServiceImpl struct {

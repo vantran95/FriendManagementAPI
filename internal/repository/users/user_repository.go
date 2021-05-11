@@ -1,16 +1,18 @@
 package users
 
 import (
-	"database/sql"
-	"log"
+	"fmt"
+	"strconv"
+	"strings"
 )
 
 //import "database/sql"
 
-func (u UserRepositoryImpl) GetAllUsers() []string {
+// GetAllUsers get all users from table user_management.
+func (u UserRepositoryImpl) GetAllUsers() ([]string, error) {
 	result, err := u.DB.Query("select email from user_management")
 	if err != nil {
-		panic(err.Error())
+		return []string{}, err
 	}
 
 	var emails []string
@@ -23,42 +25,66 @@ func (u UserRepositoryImpl) GetAllUsers() []string {
 		}
 		emails = append(emails, email)
 	}
-	return emails
+	return emails, nil
 }
 
-func (u UserRepositoryImpl) CreateUser(email string) bool {
+// CreateUser create email into table user_management.
+func (u UserRepositoryImpl) CreateUser(email string) (bool, error) {
 	query, err := u.DB.Prepare(`insert into user_management (email) values ($1)`)
 
 	if err != nil {
-		panic(err.Error())
+		return false, err
 	}
 
 	query.Exec(email)
-	return true
+	return true, nil
 }
 
 // ExistsByEmail check email is exists.
-func (u UserRepositoryImpl) ExistsByEmail(email string) bool {
+func (u UserRepositoryImpl) ExistsByEmail(email string) (bool, error) {
 	var id int
 
 	err := u.DB.QueryRow("select id from user_management where email = $1", email).Scan(&id)
 
 	if err != nil {
-		if err != sql.ErrNoRows {
-			// a real error happened! you should change your function return
-			// to "(bool, error)" and return "false, err" here
-			log.Print(err)
-		}
-		return false
+		return false, err
 	}
-	return true
+	return true, nil
 }
 
-func (u UserRepositoryImpl) FindUserIdByEmail(email string) int64 {
+// FindUserIdByEmail find email id by email
+func (u UserRepositoryImpl) FindUserIdByEmail(email string) (int64, error) {
 	var id int64
 	err := u.DB.QueryRow("select id from user_management where email = $1", email).Scan(&id)
 	if err != nil {
-		return -1
+		return -1, err
 	}
-	return id
+	return id, nil
+}
+
+// FindEmailByIds find email addresses by email ids
+func (u UserRepositoryImpl) FindEmailByIds(ids []int64) ([]string, error) {
+	strIds := make([]string, len(ids))
+	for i, id := range ids {
+		strIds[i] = strconv.FormatInt(id, 10)
+	}
+
+	qr := `select x.email
+			from user x
+			where x.id in (%s);
+			`
+	query := fmt.Sprintf(qr, strings.Join(strIds, ","))
+	results, err := u.DB.Query(query)
+	if err != nil {
+		return []string{}, err
+	}
+
+	emails := []string{}
+
+	for results.Next() {
+		var email string
+		results.Scan(&email)
+		emails = append(emails, email)
+	}
+	return emails, nil
 }
