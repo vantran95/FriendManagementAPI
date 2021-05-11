@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"FriendApi/cmd/serverd/router/restapi/response"
+	"FriendApi/cmd/serverd/router/api/response"
 	"InternalUserManagement/pkg/dto"
 	"InternalUserManagement/pkg/exception"
 	"encoding/json"

@@ -2,7 +2,7 @@ package users
 
 import "database/sql"
 
-// UserRepositoryImpl stores info to retrieve user repository.
-type UserRepositoryImpl struct {
+// RepositoryImpl stores info to retrieve user repository.
+type RepositoryImpl struct {
 	DB *sql.DB
 }

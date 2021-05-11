@@ -8,7 +8,7 @@ import (
 )
 
 // CreateRelationship attempts to create relationship between 2 email addresses.
-func (r RelationshipRepositoryImpl) CreateRelationship(relationship models.Relationship) bool {
+func (r RepositoryImpl) CreateRelationship(relationship models.Relationship) bool {
 	query, err := r.DB.Prepare("insert into relationship (first_email_id, second_email_id, status) values ($1, $2, $3);")
 
 	if err != nil {
@@ -20,7 +20,7 @@ func (r RelationshipRepositoryImpl) CreateRelationship(relationship models.Relat
 }
 
 // FindByTwoEmailIdsAndStatus attempts to retrieve a friend relationship by two email addresses id and status
-func (r RelationshipRepositoryImpl) FindByTwoEmailIdsAndStatus(firstEmailId int64, secondEmailId int64, status []int64) ([]models.Relationship, error) {
+func (r RepositoryImpl) FindByTwoEmailIdsAndStatus(firstEmailId int64, secondEmailId int64, status []int64) ([]models.Relationship, error) {
 	strStatusIds := make([]string, len(status))
 	for i, id := range status {
 		strStatusIds[i] = strconv.FormatInt(id, 10)
@@ -56,7 +56,7 @@ func (r RelationshipRepositoryImpl) FindByTwoEmailIdsAndStatus(firstEmailId int6
 }
 
 // FindByEmailIdAndStatus attempts to retrieve a friend relationship by email id and status.
-func (r RelationshipRepositoryImpl) FindByEmailIdAndStatus(emailId int64, status []int64) ([]models.Relationship, error) {
+func (r RepositoryImpl) FindByEmailIdAndStatus(emailId int64, status []int64) ([]models.Relationship, error) {
 	strStatusIds := make([]string, len(status))
 
 	for i, id := range status {

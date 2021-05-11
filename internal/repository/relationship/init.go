@@ -2,7 +2,7 @@ package relationship
 
 import "database/sql"
 
-// RelationshipRepositoryImpl stores info to retrieve relationship repository.
-type RelationshipRepositoryImpl struct {
+// RepositoryImpl stores info to retrieve relationship repository.
+type RepositoryImpl struct {
 	DB *sql.DB
 }
