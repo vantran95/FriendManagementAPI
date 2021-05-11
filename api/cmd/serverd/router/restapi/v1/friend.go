@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// FriendApi stores info to retrieve project friend api
 type FriendApi struct {
 	FriendService FriendService
 }
@@ -21,9 +22,9 @@ func (f FriendApi) CreateFriend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, error := f.FriendService.CreateFriend(friendDto)
-	if error != nil {
-		response.ErrorResponse(w, error.Code, error.Message)
+	result, err1 := f.FriendService.CreateFriend(friendDto)
+	if err1 != nil {
+		response.ErrorResponse(w, err1.Code, err1.Message)
 		return
 	}
 
@@ -56,6 +57,7 @@ func (f FriendApi) GetFriendsListByEmail(w http.ResponseWriter, r *http.Request)
 	response.SuccessResponse(w, res)
 }
 
+// GetCommonFriends attempts to retrieve a common friends list.
 func (f FriendApi) GetCommonFriends(w http.ResponseWriter, r *http.Request) {
 	var friendDto dto.FriendDto
 

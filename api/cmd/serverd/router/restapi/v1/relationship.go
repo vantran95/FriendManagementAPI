@@ -17,6 +17,7 @@ type RelationshipService interface {
 	IsFriended(firstEmailId int64, secondEmailId int64) bool
 }
 
+// FriendService interface represents the criteria used to retrieve a friend service.
 type FriendService interface {
 	CreateFriend(friendDto dto.FriendDto) (bool, *exception.Exception)
 	GetFriendsListByEmail(emailDto dto.EmailDto) ([]string, *exception.Exception)

@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+// UserService interface represents the criteria used to retrieve a user service.
 type UserService interface {
 	GetAllUsers() ([]string, error)
 	CreateUser(emailDto dto.EmailDto) (bool, *exception.Exception)
@@ -16,6 +17,7 @@ type UserService interface {
 	FindEmailByIds(ids []int64) ([]string, error)
 }
 
+// UserAPI stores info to retrieve user service
 type UserAPI struct {
 	UserService UserService
 }

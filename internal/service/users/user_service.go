@@ -45,6 +45,7 @@ func (s ServiceImpl) FindUserIdByEmail(email string) (int64, error) {
 	return id, nil
 }
 
+// FindEmailByIds attempts to find email by user ids.
 func (s ServiceImpl) FindEmailByIds(ids []int64) ([]string, error) {
 	return s.Repository.FindEmailByIds(ids)
 }
