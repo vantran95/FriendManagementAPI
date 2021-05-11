@@ -1,12 +1,18 @@
 package users
 
 import (
+	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
 //import "database/sql"
+
+// use for testing
+func NewUserRepository(db *sql.DB) RepositoryImpl {
+	return RepositoryImpl{DB: db}
+}
 
 // GetAllUsers get all users from table user_management.
 func (u RepositoryImpl) GetAllUsers() ([]string, error) {
@@ -69,10 +75,7 @@ func (u RepositoryImpl) FindEmailByIds(ids []int64) ([]string, error) {
 		strIds[i] = strconv.FormatInt(id, 10)
 	}
 
-	qr := `select x.email
-			from user_management x
-			where x.id in (%s);
-			`
+	qr := `select x.email from user_management x where x.id in (%s);`
 	query := fmt.Sprintf(qr, strings.Join(strIds, ","))
 	results, err := u.DB.Query(query)
 	if err != nil {

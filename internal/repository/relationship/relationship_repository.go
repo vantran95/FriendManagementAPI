@@ -8,15 +8,15 @@ import (
 )
 
 // CreateRelationship attempts to create relationship between 2 email addresses.
-func (r RepositoryImpl) CreateRelationship(relationship models.Relationship) bool {
+func (r RepositoryImpl) CreateRelationship(relationship models.Relationship) (bool, error) {
 	query, err := r.DB.Prepare("insert into relationship (first_email_id, second_email_id, status) values ($1, $2, $3);")
 
 	if err != nil {
-		return false
+		return false, err
 	}
 
 	query.Exec(relationship.FirstEmailId, relationship.SecondEmailId, relationship.Status)
-	return true
+	return true, nil
 }
 
 // FindByTwoEmailIdsAndStatus attempts to retrieve a friend relationship by two email addresses id and status

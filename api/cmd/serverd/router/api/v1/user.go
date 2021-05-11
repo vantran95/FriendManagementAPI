@@ -17,7 +17,7 @@ type UserService interface {
 	FindEmailByIds(ids []int64) ([]string, error)
 }
 
-// UserAPI stores info to retrieve user service
+// UserAPI stores info to retrieve user api
 type UserAPI struct {
 	UserService UserService
 }

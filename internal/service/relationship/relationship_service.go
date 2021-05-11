@@ -10,7 +10,7 @@ import (
 )
 
 // CreateRelationship attempts to retrieve a friend relationship between 2 emails
-func (r ServiceImpl) CreateRelationship(relationship models.Relationship) bool {
+func (r ServiceImpl) CreateRelationship(relationship models.Relationship) (bool, error) {
 	return r.Repository.CreateRelationship(relationship)
 }
 
@@ -56,7 +56,7 @@ func (r ServiceImpl) MakeFriend(friendDto dto.FriendDto) (bool, *exception.Excep
 		return false, &exception.Exception{Code: http.StatusInternalServerError, Message: "Two emails already friended"}
 	}
 	relationship := models.Relationship{FirstEmailId: firstEmailId, SecondEmailId: secondEmailId, Status: enum.FRIEND}
-	result := r.CreateRelationship(relationship)
+	result, _ := r.CreateRelationship(relationship)
 
 	if result != true {
 		return false, &exception.Exception{Code: http.StatusInternalServerError, Message: "Can not make friend"}

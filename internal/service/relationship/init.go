@@ -6,7 +6,7 @@ import (
 
 // Repository interface represents the criteria used to retrieve a relationship repository.
 type Repository interface {
-	CreateRelationship(relationship models.Relationship) bool
+	CreateRelationship(relationship models.Relationship) (bool, error)
 	FindByTwoEmailIdsAndStatus(firstEmailId int64, secondEmailId int64, status []int64) ([]models.Relationship, error)
 	FindByEmailIdAndStatus(emailId int64, status []int64) ([]models.Relationship, error)
 }

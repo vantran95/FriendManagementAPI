@@ -8,14 +8,14 @@ import (
 	"net/http"
 )
 
-// RelationshipService interface represents the criteria used to retrieve a friend service.
+// RelationshipService interface represents the criteria used to retrieve a relationship service.
 type RelationshipService interface {
 	MakeFriend(friendDto dto.FriendDto) (bool, *exception.Exception)
 	GetFriendsListByEmail(emailDto dto.EmailDto) ([]string, *exception.Exception)
 	GetCommonFriends(friendDto dto.FriendDto) ([]string, *exception.Exception)
 }
 
-// RelationshipApi stores info to retrieve project friend api
+// RelationshipApi stores info to retrieve project relationship api
 type RelationshipApi struct {
 	RelationshipApi RelationshipService
 }
