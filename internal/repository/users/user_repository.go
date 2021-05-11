@@ -70,7 +70,7 @@ func (u UserRepositoryImpl) FindEmailByIds(ids []int64) ([]string, error) {
 	}
 
 	qr := `select x.email
-			from user x
+			from user_management x
 			where x.id in (%s);
 			`
 	query := fmt.Sprintf(qr, strings.Join(strIds, ","))

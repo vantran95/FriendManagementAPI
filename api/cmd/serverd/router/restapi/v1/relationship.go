@@ -20,6 +20,7 @@ type RelationshipService interface {
 type FriendService interface {
 	CreateFriend(friendDto dto.FriendDto) (bool, *exception.Exception)
 	GetFriendsListByEmail(emailDto dto.EmailDto) ([]string, *exception.Exception)
+	GetCommonFriends(friendDto dto.FriendDto) ([]string, *exception.Exception)
 }
 
 // RelationshipImpl stores info to retrieve relationship
@@ -61,6 +62,7 @@ func (r RelationshipImpl) CreateFriend(friendDto dto.FriendDto) (bool, *exceptio
 	return true, nil
 }
 
+// GetFriendsListByEmail attempts to retrieve a list of friends
 func (r RelationshipImpl) GetFriendsListByEmail(emailDto dto.EmailDto) ([]string, *exception.Exception) {
 	emails := []string{}
 	if !utils.IsFormatEmail(emailDto.Email) {
@@ -82,12 +84,47 @@ func (r RelationshipImpl) GetFriendsListByEmail(emailDto dto.EmailDto) ([]string
 
 		// Get list emails by list emailIds
 		if emailIds != nil && len(emailIds) > 0 {
-			//emails = r.UserService.
+			emails, _ = r.UserService.FindEmailByIds(emailIds)
 		}
 	}
 	return emails, nil
 }
 
+// GetCommonFriends attempts to retrieve a list of common friends
+func (r RelationshipImpl) GetCommonFriends(friendDto dto.FriendDto) ([]string, *exception.Exception) {
+	commonEmails := []string{}
+	var firstEmail dto.EmailDto
+	firstEmail.Email = friendDto.Friends[0]
+	var secondEmail dto.EmailDto
+	secondEmail.Email = friendDto.Friends[1]
+
+	firstEmailRelationships, _ := r.GetFriendsListByEmail(firstEmail)
+	secondEmailRelationships, _ := r.GetFriendsListByEmail(secondEmail)
+
+	for _, v := range firstEmailRelationships {
+		if getEmailExists(secondEmailRelationships, v) {
+			commonEmails = append(commonEmails, v)
+		}
+	}
+
+	if len(commonEmails) == 0 {
+		return nil, &exception.Exception{Code: http.StatusNotFound, Message: "Do not have common friends between two emails"}
+	}
+
+	return commonEmails, nil
+}
+
+// getEmailExists check email exist on slice
+func getEmailExists(slice []string, val string) bool {
+	for _, item := range slice {
+		if item == val {
+			return true
+		}
+	}
+	return false
+}
+
+// getEmailIdsFromListRelationships attempts to retrieve a list email ids from list relationships.
 func getEmailIdsFromListRelationships(relationships []models.Relationship) []int64 {
 	keys := make(map[int64]bool)
 	set := []int64{}

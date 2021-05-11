@@ -13,6 +13,7 @@ type UserService interface {
 	CreateUser(emailDto dto.EmailDto) (bool, *exception.Exception)
 	ExistsByEmail(email string) (bool, error)
 	FindUserIdByEmail(email string) (int64, error)
+	FindEmailByIds(ids []int64) ([]string, error)
 }
 
 type UserAPI struct {
