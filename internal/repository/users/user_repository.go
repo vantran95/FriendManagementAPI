@@ -53,3 +53,12 @@ func (u UserRepositoryImpl) ExistsByEmail(email string) bool {
 	}
 	return true
 }
+
+func (u UserRepositoryImpl) FindUserIdByEmail(email string) int64 {
+	var id int64
+	err := u.DB.QueryRow("select id from user_management where email = $1", email).Scan(&id)
+	if err != nil {
+		return -1
+	}
+	return id
+}

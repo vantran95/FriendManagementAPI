@@ -12,6 +12,7 @@ type UserService interface {
 	GetAllUsers() []string
 	CreateUser(emailDto dto.EmailDto) (bool, *exception.Exception)
 	ExistsByEmail(email string) bool
+	FindUserIdByEmail(email string) (int64, error)
 }
 
 type UserAPI struct {
@@ -21,7 +22,7 @@ type UserAPI struct {
 func (u UserAPI) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	users := u.UserService.GetAllUsers()
 	res := response.Response{Success: true, Friends: users, Count: len(users)}
-	responseWithJSON(w, http.StatusOK, res)
+	response.SuccessResponse(w, res)
 }
 
 func (u UserAPI) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -30,28 +31,15 @@ func (u UserAPI) CreateUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&emailDto)
 
 	if err != nil {
-		responseWithError(w, http.StatusBadRequest, "Invalid request body")
+		response.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	result, error := u.UserService.CreateUser(emailDto)
 	if error != nil {
-		responseWithError(w, http.StatusBadRequest, error.Error())
+		response.ErrorResponse(w, http.StatusBadRequest, error.Error())
 	}
 
 	res := response.Success{Success: result}
-	responseWithJSON(w, http.StatusOK, res)
-}
-
-func responseWithError(response http.ResponseWriter, statusCode int, msg string) {
-	responseWithJSON(response, statusCode, map[string]string{
-		"Error": msg,
-	})
-}
-
-func responseWithJSON(response http.ResponseWriter, statusCode int, data interface{}) {
-	result, _ := json.Marshal(data)
-	response.Header().Set("Content-Type", "application/json")
-	response.WriteHeader(statusCode)
-	response.Write(result)
+	response.SuccessResponse(w, res)
 }

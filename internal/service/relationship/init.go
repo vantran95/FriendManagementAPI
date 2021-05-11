@@ -1,6 +1,8 @@
 package relationship
 
-import "InternalUserManagement/models"
+import (
+	"InternalUserManagement/models"
+)
 
 type RelationshipRepository interface {
 	CreateRelationship(relationship models.Relationship) bool

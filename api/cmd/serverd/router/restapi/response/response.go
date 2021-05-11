@@ -1,5 +1,6 @@
 package response
 
+// Response stores info to retrieve response json
 type Response struct {
 	Success bool     `json:"success"`
 	Friends []string `json:"friends"`
