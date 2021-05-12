@@ -1,9 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"FriendApi/cmd/serverd/config"
 	"FriendApi/cmd/serverd/router"
-	"log"
 )
 
 func init() {
