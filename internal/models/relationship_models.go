@@ -2,8 +2,8 @@ package models
 
 // Relationship stores info to retrieve relationship struct
 type Relationship struct {
-	Id            int64 `json:"id"`
-	FirstEmailId  int64 `json:"firstEmailId"`
-	SecondEmailId int64 `json:"secondEmailId"`
+	ID            int64 `json:"id"`
+	FirstEmailID  int64 `json:"firstEmailID"`
+	SecondEmailID int64 `json:"secondEmailID"`
 	Status        int64 `json:"status"`
 }

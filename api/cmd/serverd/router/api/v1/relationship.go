@@ -3,7 +3,6 @@ package v1
 import (
 	"FriendApi/cmd/serverd/router/api/response"
 	"InternalUserManagement/pkg/dto"
-	"InternalUserManagement/pkg/exception"
 	"InternalUserManagement/pkg/utils"
 	"encoding/json"
 	"net/http"
@@ -11,9 +10,9 @@ import (
 
 // RelationshipService interface represents the criteria used to retrieve a relationship service.
 type RelationshipService interface {
-	MakeFriend(firstEmail, secondEmail string) (bool, *exception.Exception)
-	GetFriendsListByEmail(email string) ([]string, *exception.Exception)
-	GetCommonFriends(firstEmail, secondEmail string) ([]string, *exception.Exception)
+	MakeFriend(firstEmail, secondEmail string) (bool, error)
+	GetFriendsList(email string) ([]string, error)
+	GetCommonFriends(firstEmail, secondEmail string) ([]string, error)
 }
 
 // RelationshipApi stores info to retrieve project relationship api
@@ -39,7 +38,7 @@ func (f RelationshipApi) CreateFriend(w http.ResponseWriter, r *http.Request) {
 	}
 	result, err := f.RelationshipApi.MakeFriend(firstEmail, secondEmail)
 	if err != nil {
-		response.ErrorResponse(w, err.Code, err.Message)
+		response.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -47,8 +46,8 @@ func (f RelationshipApi) CreateFriend(w http.ResponseWriter, r *http.Request) {
 	response.SuccessResponse(w, res)
 }
 
-// GetFriendsListByEmail is endpoint to retrieve friends list connected with email
-func (f RelationshipApi) GetFriendsListByEmail(w http.ResponseWriter, r *http.Request) {
+// GetFriendsList is endpoint to retrieve friends list connected with email
+func (f RelationshipApi) GetFriendsList(w http.ResponseWriter, r *http.Request) {
 	var emailDto dto.EmailDto
 
 	if err := json.NewDecoder(r.Body).Decode(&emailDto); err != nil {
@@ -62,14 +61,14 @@ func (f RelationshipApi) GetFriendsListByEmail(w http.ResponseWriter, r *http.Re
 		response.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
 		return
 	}
-	results, err := f.RelationshipApi.GetFriendsListByEmail(email)
+	results, err := f.RelationshipApi.GetFriendsList(email)
 	if err != nil {
-		response.ErrorResponse(w, err.Code, err.Message)
+		response.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if len(results) == 0 {
-		response.ErrorResponse(w, http.StatusBadRequest, "Can not get friends list")
+		response.ErrorResponse(w, http.StatusBadRequest, "The user doesn't have friends")
 		return
 	}
 
@@ -97,7 +96,7 @@ func (f RelationshipApi) GetCommonFriends(w http.ResponseWriter, r *http.Request
 
 	results, err := f.RelationshipApi.GetCommonFriends(firstEmail, secondEmail)
 	if err != nil {
-		response.ErrorResponse(w, err.Code, err.Message)
+		response.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 

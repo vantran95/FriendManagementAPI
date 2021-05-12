@@ -1,12 +1,11 @@
 package utils
 
 import (
-	"net"
 	"regexp"
-	"strings"
 )
 
-const EMAIL_REGEX = "^[a-zA-Z0-9.!#$%&'*+\\\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+//const EMAIL_REGEX = "^[a-zA-Z0-9.!#$%&'*+\\\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+const EMAIL_REGEX = "[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})"
 
 // IsFormatEmail attempts to check email format.
 func IsFormatEmail(email string) bool {
@@ -18,11 +17,11 @@ func IsFormatEmail(email string) bool {
 	if !re.MatchString(email) {
 		return false
 	}
-	parts := strings.Split(email, "@")
-	mx, err := net.LookupMX(parts[1])
-	if err != nil || len(mx) == 0 {
-		return false
-	}
+	//parts := strings.Split(email, "@")
+	//mx, err := net.LookupMX(parts[1])
+	//if err != nil || len(mx) == 0 {
+	//	return false
+	//}
 	return true
 }
 

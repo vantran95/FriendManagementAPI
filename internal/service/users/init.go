@@ -1,12 +1,12 @@
 package users
 
+import "InternalUserManagement/models"
+
 // Repository interface represents the criteria used to retrieve a user repository.
 type Repository interface {
-	GetAllUsers() ([]string, error)
+	GetAllUsers() ([]models.User, error)
 	CreateUser(email string) (bool, error)
-	ExistsByEmail(email string) (bool, error)
-	FindUserIdByEmail(email string) (int64, error)
-	FindEmailByIds(ids []int64) ([]string, error)
+	GetUser(email string) (models.User, error)
 }
 
 // ServiceImpl stores info to retrieve user service.

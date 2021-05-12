@@ -40,7 +40,7 @@ func HandleRequest(db *sql.DB) {
 	// Route for relationship API
 	friendHandel := initRelationshipController(db)
 	myRoute.Post("/friend/create-friend", friendHandel.CreateFriend)
-	myRoute.Post("/friend/get-friends-list", friendHandel.GetFriendsListByEmail)
+	myRoute.Post("/friend/get-friends-list", friendHandel.GetFriendsList)
 	myRoute.Post("/friend/get-common-friends-list", friendHandel.GetCommonFriends)
 
 	log.Fatal(http.ListenAndServe(":8082", myRoute))

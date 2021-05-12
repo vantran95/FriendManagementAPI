@@ -2,6 +2,7 @@ package v1
 
 import (
 	"FriendApi/cmd/serverd/router/api/response"
+	"InternalUserManagement/models"
 	"InternalUserManagement/pkg/dto"
 	"InternalUserManagement/pkg/exception"
 	"InternalUserManagement/pkg/utils"
@@ -11,11 +12,8 @@ import (
 
 // UserService interface represents the criteria used to retrieve a user service.
 type UserService interface {
-	GetAllUsers() ([]string, error)
+	GetAllUsers() ([]models.User, error)
 	CreateUser(email string) (bool, *exception.Exception)
-	ExistsByEmail(email string) (bool, error)
-	FindUserIdByEmail(email string) (int64, error)
-	FindEmailByIds(ids []int64) ([]string, error)
 }
 
 // UserAPI stores info to retrieve user api
@@ -25,8 +23,16 @@ type UserAPI struct {
 
 // GetAllUsers retrieve a API to get all users.
 func (u UserAPI) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	users, _ := u.UserService.GetAllUsers()
-	res := response.Response{Success: true, Friends: users, Count: len(users)}
+	users, err := u.UserService.GetAllUsers()
+	if err != nil {
+		response.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	var userEmails []string
+	for _, u := range users {
+		userEmails = append(userEmails, u.Email)
+	}
+	res := response.Response{Success: true, Friends: userEmails, Count: len(userEmails)}
 	response.SuccessResponse(w, res)
 }
 
