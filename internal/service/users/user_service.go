@@ -1,9 +1,7 @@
 package users
 
 import (
-	"InternalUserManagement/pkg/dto"
 	"InternalUserManagement/pkg/exception"
-	"InternalUserManagement/pkg/utils"
 	"errors"
 	"net/http"
 )
@@ -14,15 +12,12 @@ func (s ServiceImpl) GetAllUsers() ([]string, error) {
 }
 
 // CreateUser attempts to create a user
-func (s ServiceImpl) CreateUser(emailDto dto.EmailDto) (bool, *exception.Exception) {
-	if !utils.IsFormatEmail(emailDto.Email) {
-		return false, &exception.Exception{Code: http.StatusBadRequest, Message: "Email invalid format"}
-	}
-	existsByEmail, _ := s.Repository.ExistsByEmail(emailDto.Email)
+func (s ServiceImpl) CreateUser(email string) (bool, *exception.Exception) {
+	existsByEmail, _ := s.Repository.ExistsByEmail(email)
 	if existsByEmail {
 		return false, &exception.Exception{Code: http.StatusBadRequest, Message: "Email already exists"}
 	}
-	createUser, _ := s.Repository.CreateUser(emailDto.Email)
+	createUser, _ := s.Repository.CreateUser(email)
 
 	if createUser != true {
 		return false, &exception.Exception{Code: http.StatusBadRequest, Message: "Cannot create user"}

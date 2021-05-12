@@ -4,6 +4,7 @@ import (
 	"FriendApi/cmd/serverd/router/api/response"
 	"InternalUserManagement/pkg/dto"
 	"InternalUserManagement/pkg/exception"
+	"InternalUserManagement/pkg/utils"
 	"encoding/json"
 	"net/http"
 )
@@ -11,7 +12,7 @@ import (
 // UserService interface represents the criteria used to retrieve a user service.
 type UserService interface {
 	GetAllUsers() ([]string, error)
-	CreateUser(emailDto dto.EmailDto) (bool, *exception.Exception)
+	CreateUser(email string) (bool, *exception.Exception)
 	ExistsByEmail(email string) (bool, error)
 	FindUserIdByEmail(email string) (int64, error)
 	FindEmailByIds(ids []int64) ([]string, error)
@@ -40,7 +41,14 @@ func (u UserAPI) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, error := u.UserService.CreateUser(emailDto)
+	email := emailDto.Email
+	// Validate email format
+	if !utils.IsFormatEmail(email) {
+		response.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
+		return
+	}
+
+	result, error := u.UserService.CreateUser(email)
 	if error != nil {
 		response.ErrorResponse(w, http.StatusBadRequest, error.Message)
 		return

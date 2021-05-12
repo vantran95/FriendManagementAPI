@@ -1,16 +1,29 @@
 package utils
 
-import "regexp"
+import (
+	"net"
+	"regexp"
+	"strings"
+)
 
-const EMAIL_REGEX = "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+const EMAIL_REGEX = "^[a-zA-Z0-9.!#$%&'*+\\\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
 
 // IsFormatEmail attempts to check email format.
 func IsFormatEmail(email string) bool {
 	re, _ := regexp.Compile(EMAIL_REGEX)
-	if re.MatchString(email) {
-		return true
+
+	if len(email) < 3 && len(email) > 254 {
+		return false
 	}
-	return false
+	if !re.MatchString(email) {
+		return false
+	}
+	parts := strings.Split(email, "@")
+	mx, err := net.LookupMX(parts[1])
+	if err != nil || len(mx) == 0 {
+		return false
+	}
+	return true
 }
 
 // RemoveItemFromList attempts to remove items from list.

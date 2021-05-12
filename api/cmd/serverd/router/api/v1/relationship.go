@@ -4,15 +4,16 @@ import (
 	"FriendApi/cmd/serverd/router/api/response"
 	"InternalUserManagement/pkg/dto"
 	"InternalUserManagement/pkg/exception"
+	"InternalUserManagement/pkg/utils"
 	"encoding/json"
 	"net/http"
 )
 
 // RelationshipService interface represents the criteria used to retrieve a relationship service.
 type RelationshipService interface {
-	MakeFriend(friendDto dto.FriendDto) (bool, *exception.Exception)
-	GetFriendsListByEmail(emailDto dto.EmailDto) ([]string, *exception.Exception)
-	GetCommonFriends(friendDto dto.FriendDto) ([]string, *exception.Exception)
+	MakeFriend(firstEmail, secondEmail string) (bool, *exception.Exception)
+	GetFriendsListByEmail(email string) ([]string, *exception.Exception)
+	GetCommonFriends(firstEmail, secondEmail string) ([]string, *exception.Exception)
 }
 
 // RelationshipApi stores info to retrieve project relationship api
@@ -24,15 +25,21 @@ type RelationshipApi struct {
 func (f RelationshipApi) CreateFriend(w http.ResponseWriter, r *http.Request) {
 	var friendDto dto.FriendDto
 
-	err := json.NewDecoder(r.Body).Decode(&friendDto)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&friendDto); err != nil {
 		response.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
+	firstEmail := friendDto.Friends[0]
+	secondEmail := friendDto.Friends[1]
 
-	result, err1 := f.RelationshipApi.MakeFriend(friendDto)
-	if err1 != nil {
-		response.ErrorResponse(w, err1.Code, err1.Message)
+	// Validate email format
+	if !utils.IsFormatEmail(firstEmail) || !utils.IsFormatEmail(secondEmail) {
+		response.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
+		return
+	}
+	result, err := f.RelationshipApi.MakeFriend(firstEmail, secondEmail)
+	if err != nil {
+		response.ErrorResponse(w, err.Code, err.Message)
 		return
 	}
 
@@ -49,7 +56,13 @@ func (f RelationshipApi) GetFriendsListByEmail(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	results, err := f.RelationshipApi.GetFriendsListByEmail(emailDto)
+	email := emailDto.Email
+	// Validate email format
+	if !utils.IsFormatEmail(email) {
+		response.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
+		return
+	}
+	results, err := f.RelationshipApi.GetFriendsListByEmail(email)
 	if err != nil {
 		response.ErrorResponse(w, err.Code, err.Message)
 		return
@@ -73,8 +86,16 @@ func (f RelationshipApi) GetCommonFriends(w http.ResponseWriter, r *http.Request
 		response.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
+	firstEmail := friendDto.Friends[0]
+	secondEmail := friendDto.Friends[1]
 
-	results, err := f.RelationshipApi.GetCommonFriends(friendDto)
+	// Validate email format
+	if !utils.IsFormatEmail(firstEmail) || !utils.IsFormatEmail(secondEmail) {
+		response.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
+		return
+	}
+
+	results, err := f.RelationshipApi.GetCommonFriends(firstEmail, secondEmail)
 	if err != nil {
 		response.ErrorResponse(w, err.Code, err.Message)
 		return

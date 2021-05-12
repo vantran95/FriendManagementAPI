@@ -8,6 +8,7 @@ import (
 type Repository interface {
 	CreateRelationship(relationship models.Relationship) (bool, error)
 	FindByTwoEmailIdsAndStatus(firstEmailId int64, secondEmailId int64, status []int64) ([]models.Relationship, error)
+	GetRelationship(fromID, toID int64) ([]models.Relationship, error)
 	FindByEmailIdAndStatus(emailId int64, status []int64) ([]models.Relationship, error)
 }
 

@@ -95,3 +95,31 @@ func (r RepositoryImpl) FindByEmailIdAndStatus(emailId int64, status []int64) ([
 
 	return relationships, nil
 }
+
+func (r RepositoryImpl) GetRelationship(fromID, toID int64) ([]models.Relationship, error) {
+	stmt := `select x.*
+			from relationship x
+			where x.first_email_id in (%s, %s)
+			and x.second_email_id in (%s, %s);
+			`
+	query := fmt.Sprintf(
+		stmt,
+		strconv.FormatInt(fromID, 10),
+		strconv.FormatInt(toID, 10),
+		strconv.FormatInt(fromID, 10),
+		strconv.FormatInt(toID, 10))
+
+	results, err := r.DB.Query(query)
+	if err != nil {
+		return []models.Relationship{}, err
+	}
+
+	var relationships []models.Relationship
+	for results.Next() {
+		var id, firstEmailId, secondEmailId, status int64
+		results.Scan(&id, &firstEmailId, &secondEmailId, &status)
+		relationship := models.Relationship{Id: id, FirstEmailId: firstEmailId, SecondEmailId: secondEmailId, Status: status}
+		relationships = append(relationships, relationship)
+	}
+	return relationships, nil
+}
