@@ -1,11 +1,12 @@
 package v1
 
 import (
+	"encoding/json"
+	"net/http"
+
 	"FriendApi/cmd/serverd/router/api/response"
 	"InternalUserManagement/pkg/dto"
 	"InternalUserManagement/pkg/utils"
-	"encoding/json"
-	"net/http"
 )
 
 // RelationshipService interface represents the criteria used to retrieve a relationship service.

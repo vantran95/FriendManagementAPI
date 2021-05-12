@@ -1,11 +1,12 @@
 package users
 
 import (
+	"regexp"
+	"testing"
+
 	"InternalUserManagement/models"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	"regexp"
-	"testing"
 )
 
 // TestGetAllUser test function get all users.

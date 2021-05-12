@@ -1,15 +1,16 @@
 package router
 
 import (
+	"database/sql"
+	"log"
+	"net/http"
+
 	v1 "FriendApi/cmd/serverd/router/api/v1"
 	"InternalUserManagement/repository/relationship"
 	users2 "InternalUserManagement/repository/users"
 	relationship2 "InternalUserManagement/service/relationship"
 	"InternalUserManagement/service/users"
-	"database/sql"
 	"github.com/go-chi/chi/v5"
-	"log"
-	"net/http"
 )
 
 // initUserController init a controller for user service

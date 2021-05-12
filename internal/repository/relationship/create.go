@@ -1,8 +1,9 @@
 package relationship
 
 import (
-	"InternalUserManagement/models"
 	"database/sql"
+
+	"InternalUserManagement/models"
 )
 
 // NewRelationshipRepository use for create database to write unit test.

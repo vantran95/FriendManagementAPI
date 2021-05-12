@@ -1,8 +1,9 @@
 package relationship
 
 import (
-	"InternalUserManagement/models"
 	"errors"
+
+	"InternalUserManagement/models"
 )
 
 // getRelationships get relationship between two emails.
@@ -33,8 +34,14 @@ func (s ServiceImpl) GetFriendsList(email string) ([]string, error) {
 func (s ServiceImpl) GetCommonFriends(firstEmail, secondEmail string) ([]string, error) {
 	var commonEmails []string
 
-	firstFriendsList, _ := s.GetFriendsList(firstEmail)
-	secondFriendsList, _ := s.GetFriendsList(secondEmail)
+	firstFriendsList, err := s.GetFriendsList(firstEmail)
+	if err != nil {
+		return []string{}, err
+	}
+	secondFriendsList, err := s.GetFriendsList(secondEmail)
+	if err != nil {
+		return []string{}, err
+	}
 
 	for _, v := range firstFriendsList {
 		for _, item := range secondFriendsList {

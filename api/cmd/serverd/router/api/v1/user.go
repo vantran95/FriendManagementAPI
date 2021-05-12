@@ -1,19 +1,19 @@
 package v1
 
 import (
+	"encoding/json"
+	"net/http"
+
 	"FriendApi/cmd/serverd/router/api/response"
 	"InternalUserManagement/models"
 	"InternalUserManagement/pkg/dto"
-	"InternalUserManagement/pkg/exception"
 	"InternalUserManagement/pkg/utils"
-	"encoding/json"
-	"net/http"
 )
 
 // UserService interface represents the criteria used to retrieve a user service.
 type UserService interface {
 	GetAllUsers() ([]models.User, error)
-	CreateUser(email string) (bool, *exception.Exception)
+	CreateUser(email string) (bool, error)
 }
 
 // UserAPI stores info to retrieve user api
@@ -56,7 +56,7 @@ func (u UserAPI) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	result, error := u.UserService.CreateUser(email)
 	if error != nil {
-		response.ErrorResponse(w, http.StatusBadRequest, error.Message)
+		response.ErrorResponse(w, http.StatusBadRequest, error.Error())
 		return
 	}
 

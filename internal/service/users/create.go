@@ -1,21 +1,18 @@
 package users
 
 import (
-	"InternalUserManagement/pkg/exception"
-	"net/http"
+	"errors"
 )
 
 // CreateUser attempts to create a user
-func (s ServiceImpl) CreateUser(email string) (bool, *exception.Exception) {
-	getUser, _ := s.Repository.GetUser(email)
+func (s ServiceImpl) CreateUser(email string) (bool, error) {
+	getUser, err := s.Repository.GetUser(email)
+	if err != nil {
+		return false, err
+	}
+
 	if getUser.Email != "" {
-		return false, &exception.Exception{Code: http.StatusBadRequest, Message: "Email already exists"}
+		return false, errors.New("email already exists")
 	}
-	createUser, _ := s.Repository.CreateUser(email)
-
-	if createUser != true {
-		return false, &exception.Exception{Code: http.StatusBadRequest, Message: "Cannot create user"}
-	}
-
-	return true, nil
+	return s.Repository.CreateUser(email)
 }

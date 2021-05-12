@@ -1,13 +1,14 @@
 package relationship
 
 import (
-	"InternalUserManagement/models"
 	"fmt"
-	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
 	"regexp"
 	"strconv"
 	"testing"
+
+	"InternalUserManagement/models"
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetRelationships(t *testing.T) {

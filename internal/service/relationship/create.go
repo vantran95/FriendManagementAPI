@@ -1,9 +1,10 @@
 package relationship
 
 import (
+	"errors"
+
 	"InternalUserManagement/models"
 	"InternalUserManagement/pkg/enum"
-	"errors"
 )
 
 // MakeFriend attempts to create a relationship between two emails.

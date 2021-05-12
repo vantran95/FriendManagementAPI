@@ -1,10 +1,11 @@
 package users
 
 import (
-	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
 	"regexp"
 	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateUser(t *testing.T) {

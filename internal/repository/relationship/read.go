@@ -1,9 +1,10 @@
 package relationship
 
 import (
-	"InternalUserManagement/models"
 	"fmt"
 	"strconv"
+
+	"InternalUserManagement/models"
 )
 
 // GetRelationships attempts to retrieve a relationship through two email ids
