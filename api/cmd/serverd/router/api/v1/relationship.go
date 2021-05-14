@@ -4,10 +4,23 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"FriendApi/cmd/serverd/router/api/response"
-	"InternalUserManagement/pkg/dto"
-	"InternalUserManagement/pkg/utils"
+	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/response"
 )
+
+// comment
+type createFriendInput struct {
+	Friends []string `json:"friends"`
+}
+
+// comment
+type getFriendsInput struct {
+	Email string `json:"email"`
+}
+
+// comment
+type getCommonFriendsInput struct {
+	Friends []string `json:"friends"`
+}
 
 // RelationshipService interface represents the criteria used to retrieve a relationship service.
 type RelationshipService interface {
@@ -22,85 +35,64 @@ type RelationshipApi struct {
 }
 
 // CreateFriend is endpoint to create friend connection between 2 emails addresses.
-func (f RelationshipApi) CreateFriend(w http.ResponseWriter, r *http.Request) {
-	var friendDto dto.FriendDto
+func (rsv Resolver) CreateFriend(w http.ResponseWriter, r *http.Request) {
+	var input createFriendInput
 
-	if err := json.NewDecoder(r.Body).Decode(&friendDto); err != nil {
-		response.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.ResponseJson(w, r, response.ErrorResp{Status: http.StatusBadRequest, ErrorMessage: "Invalid request body"})
 		return
 	}
-	firstEmail := friendDto.Friends[0]
-	secondEmail := friendDto.Friends[1]
+	firstEmail := input.Friends[0]
+	secondEmail := input.Friends[1]
 
-	// Validate email format
-	if !utils.IsFormatEmail(firstEmail) || !utils.IsFormatEmail(secondEmail) {
-		response.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
-		return
-	}
-	result, err := f.RelationshipApi.MakeFriend(firstEmail, secondEmail)
+	result, err := rsv.RelationshipSrv.MakeFriend(firstEmail, secondEmail)
 	if err != nil {
-		response.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		response.ResponseJson(w, r, response.ErrorResp{Status: http.StatusBadRequest, ErrorMessage: err.Error()})
 		return
 	}
 
-	res := response.Success{Success: result}
-	response.SuccessResponse(w, res)
+	response.ResponseJson(w, r, response.SuccessResp{Success: result})
 }
 
 // GetFriendsList is endpoint to retrieve friends list connected with email
-func (f RelationshipApi) GetFriendsList(w http.ResponseWriter, r *http.Request) {
-	var emailDto dto.EmailDto
+func (rsv Resolver) GetFriendsList(w http.ResponseWriter, r *http.Request) {
+	var input getFriendsInput
 
-	if err := json.NewDecoder(r.Body).Decode(&emailDto); err != nil {
-		response.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.ResponseJson(w, r, response.ErrorResp{Status: http.StatusBadRequest, ErrorMessage: "Invalid request body"})
 		return
 	}
 
-	email := emailDto.Email
-	// Validate email format
-	if !utils.IsFormatEmail(email) {
-		response.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
-		return
-	}
-	results, err := f.RelationshipApi.GetFriendsList(email)
+	results, err := rsv.RelationshipSrv.GetFriendsList(input.Email)
 	if err != nil {
-		response.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		response.ResponseJson(w, r, response.ErrorResp{Status: http.StatusBadRequest, ErrorMessage: err.Error()})
 		return
 	}
 
 	if len(results) == 0 {
-		response.ErrorResponse(w, http.StatusBadRequest, "The user doesn't have friends")
+		response.ResponseJson(w, r, response.ErrorResp{Status: http.StatusBadRequest, ErrorMessage: "The user doesn't have friends"})
 		return
 	}
 
-	res := response.Response{Success: true, Friends: results, Count: len(results)}
-
-	response.SuccessResponse(w, res)
+	response.ResponseJson(w, r, response.Response{Success: true, Friends: results, Count: len(results)})
 }
 
 // GetCommonFriends is endpoint to retrieve a common friends list.
-func (f RelationshipApi) GetCommonFriends(w http.ResponseWriter, r *http.Request) {
-	var friendDto dto.FriendDto
+func (rsv Resolver) GetCommonFriends(w http.ResponseWriter, r *http.Request) {
+	var input getCommonFriendsInput
 
-	if err := json.NewDecoder(r.Body).Decode(&friendDto); err != nil {
-		response.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.ResponseJson(w, r, response.ErrorResp{Status: http.StatusBadRequest, ErrorMessage: "Invalid request body"})
 		return
 	}
-	firstEmail := friendDto.Friends[0]
-	secondEmail := friendDto.Friends[1]
+	firstEmail := input.Friends[0]
+	secondEmail := input.Friends[1]
 
-	// Validate email format
-	if !utils.IsFormatEmail(firstEmail) || !utils.IsFormatEmail(secondEmail) {
-		response.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
-		return
-	}
-
-	results, err := f.RelationshipApi.GetCommonFriends(firstEmail, secondEmail)
+	results, err := rsv.RelationshipSrv.GetCommonFriends(firstEmail, secondEmail)
 	if err != nil {
-		response.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		response.ResponseJson(w, r, response.ErrorResp{Status: http.StatusBadRequest, ErrorMessage: err.Error()})
 		return
 	}
 
-	res := response.Response{Success: true, Friends: results, Count: len(results)}
-	response.SuccessResponse(w, res)
+	response.ResponseJson(w, r, response.Response{Success: true, Friends: results, Count: len(results)})
 }

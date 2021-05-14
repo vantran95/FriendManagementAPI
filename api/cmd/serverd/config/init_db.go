@@ -39,5 +39,6 @@ func Initialize(username, password, dbname string) (Database, error) {
 		return db, err
 	}
 	log.Println("Database connection established")
+
 	return db, nil
 }

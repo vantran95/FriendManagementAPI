@@ -3,29 +3,15 @@ package main
 import (
 	"log"
 
-	"FriendApi/cmd/serverd/config"
-	"FriendApi/cmd/serverd/router"
+	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/database"
+	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router"
 )
 
-func init() {
-
-	//err := godotenv.Load("./api/.env")
-	//
-	//if err != nil {
-	//	log.Fatal("Error loading .env file")
-	//}
-}
 func main() {
-	//dbUser, dbPassword, dbName :=
-	//os.Getenv("POSTGRES_USER"),
-	//os.Getenv("POSTGRES_PASSWORD"),
-	//os.Getenv("POSTGRES_DB")
-
-	dbUser, dbPassword, dbName := "postgres", "admin", "friend_db"
-	database, err := config.Initialize(dbUser, dbPassword, dbName)
+	db, err := database.Initialize()
 	if err != nil {
 		log.Fatalf("Could not set up database: %v", err)
 	}
-	defer database.Conn.Close()
-	router.HandleRequest(database.Conn)
+	defer db.Conn.Close()
+	router.HandleRequest(db.Conn)
 }

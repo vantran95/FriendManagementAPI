@@ -2,47 +2,48 @@ package router
 
 import (
 	"database/sql"
+	v1 "github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/v1"
+	relationshipRepo "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/repository/relationships"
+	userRepo "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/repository/users"
+	relationshipService "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/service/relationships"
+	userService "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/service/users"
 	"log"
 	"net/http"
 
-	v1 "FriendApi/cmd/serverd/router/api/v1"
-	"InternalUserManagement/repository/relationship"
-	users2 "InternalUserManagement/repository/users"
-	relationship2 "InternalUserManagement/service/relationship"
-	"InternalUserManagement/service/users"
 	"github.com/go-chi/chi/v5"
 )
 
-// initUserController init a controller for user service
-func initUserController(db *sql.DB) v1.UserAPI {
-	userRepository := users2.RepositoryImpl{DB: db}
-	userService := users.ServiceImpl{Repository: userRepository}
-	return v1.UserAPI{UserService: userService}
-}
-
-// initRelationshipController init a controller for friend service
-func initRelationshipController(db *sql.DB) v1.RelationshipApi {
-	userRepository := users2.RepositoryImpl{DB: db}
-	userService := users.ServiceImpl{Repository: userRepository}
-
-	relationshipRepository := relationship.RepositoryImpl{DB: db}
-	relationshipService := relationship2.ServiceImpl{Repository: relationshipRepository, UserService: userService}
-
-	return v1.RelationshipApi{RelationshipApi: relationshipService}
-}
-
 // HandleRequest handle all request route
 func HandleRequest(db *sql.DB) {
-	myRoute := chi.NewRouter()
-	userHandle := initUserController(db)
-	myRoute.Get("/users", userHandle.GetAllUsers)
-	myRoute.Post("/users/create-user", userHandle.CreateUser)
+	routes := chi.NewRouter()
+
+	// Route for user API
+	routes.Get("/v1/users", initUserAPIResolver(db).GetAllUsers)
+	routes.Post("/v1/users/create-user", initUserAPIResolver(db).CreateUser)
 
 	// Route for relationship API
-	friendHandel := initRelationshipController(db)
-	myRoute.Post("/friend/create-friend", friendHandel.CreateFriend)
-	myRoute.Post("/friend/get-friends-list", friendHandel.GetFriendsList)
-	myRoute.Post("/friend/get-common-friends-list", friendHandel.GetCommonFriends)
+	routes.Post("/v1/friend/create-friend", initRelationshipAPIResolver(db).CreateFriend)
+	routes.Post("/v1/friend/get-friends-list", initRelationshipAPIResolver(db).GetFriendsList)
+	routes.Post("/v1/friend/get-common-friends-list", initRelationshipAPIResolver(db).GetCommonFriends)
 
-	log.Fatal(http.ListenAndServe(":8082", myRoute))
+	log.Fatal(http.ListenAndServe(":8083", routes))
+}
+
+func initUserAPIResolver(db *sql.DB) v1.Resolver {
+	return v1.Resolver{
+		UserSrv: userService.ServiceImpl{
+			Repository: userRepo.RepositoryImpl{DB: db},
+		},
+	}
+}
+
+func initRelationshipAPIResolver(db *sql.DB) v1.Resolver {
+	return v1.Resolver{
+		RelationshipSrv: relationshipService.ServiceImpl{
+			UserService: userService.ServiceImpl{
+				Repository: userRepo.RepositoryImpl{DB: db},
+			},
+			Repository: relationshipRepo.RepositoryImpl{DB: db},
+		},
+	}
 }
