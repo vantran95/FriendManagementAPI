@@ -1,6 +1,8 @@
 package relationships
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 // RepositoryImpl stores info to retrieve relationship repository.
 type RepositoryImpl struct {

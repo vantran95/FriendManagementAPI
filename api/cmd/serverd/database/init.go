@@ -2,10 +2,7 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
-
-	_ "github.com/lib/pq"
+	"errors"
 )
 
 type Database struct {
@@ -13,23 +10,28 @@ type Database struct {
 }
 
 func Initialize() (Database, error) {
-	dbUser, dbPassword, dbName := "postgres", "admin", "friend_db"
-	db := Database{}
-	dsn := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		HOST, PORT, dbUser, dbPassword, dbName)
+	// should be choose db type from env var, default is POSTGRES
+	dbType := "POSTGRES" // default db type
 
-	conn, err := sql.Open("postgres", dsn)
+	conn, err := initDB(dbType)
 	if err != nil {
-		return db, err
+		return Database{}, err
 	}
 
-	db.Conn = conn
+	db := Database{Conn: conn}
 	err = db.Conn.Ping()
 	if err != nil {
 		return db, err
 	}
 
-	log.Println("Database connection established")
 	return db, nil
+}
+
+func initDB(dbType string) (*sql.DB, error) {
+	switch dbType {
+	case "POSTGRES":
+		return PostgresDB()
+	default:
+		return nil, errors.New("cannot init db")
+	}
 }

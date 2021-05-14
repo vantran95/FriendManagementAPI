@@ -42,12 +42,12 @@ func (r RepositoryImpl) GetFriendsList(emailID int64) ([]models.User, error) {
 	qr := `select u.id, u.email
 			from users u
          		join relationships r on r.second_email_id = u.id
-			where r.first_email_id = %s and r.status = 0
+			where r.first_email_id = %s and r.status = 'FRIEND'
 			union
 			select u.id, u.email
 			from users u
          		join relationships r on r.first_email_id = u.id
-			where r.second_email_id = %s and r.status = 0;
+			where r.second_email_id = %s and r.status = 'FRIEND';
 			`
 	query := fmt.Sprintf(
 		qr,

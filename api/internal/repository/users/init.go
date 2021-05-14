@@ -1,6 +1,8 @@
 package users
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 // RepositoryImpl stores info to retrieve user repository.
 type RepositoryImpl struct {

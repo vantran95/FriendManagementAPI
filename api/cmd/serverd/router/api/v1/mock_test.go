@@ -1,60 +1,39 @@
 package v1
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 	"github.com/stretchr/testify/assert"
 )
 
-type mockUserService struct {
-	TestF                 *testing.T
-	mockGetAllUsersResult []models.User
-	mockCreateUserInput   string
-	mockCreateUserResult  bool
-	mockError             error
+type mockUserRetrieverService struct {
+	TestF            *testing.T
+	GetAllUsersInput struct {
+		Output []models.User
+		Err    error
+	}
 }
 
-type mockRelationshipService struct {
-	TestF                     *testing.T
-	mockMakeFriendFirstInput  string
-	mockMakeFriendSecondInput string
-	mockMakeFriendResult      bool
-	mockError                 error
+type mockUserCreatorService struct {
+	TestF           *testing.T
+	CreateUserInput struct {
+		Input  string
+		Output bool
+		Err    error
+	}
 }
 
-func (m mockUserService) GetAllUsers() ([]models.User, error) {
-	fmt.Println("fired to mock GetAllUsers")
-	return m.mockGetAllUsersResult, m.mockError
+func (m mockUserRetrieverService) GetAllUsers() ([]models.User, error) {
+	return m.GetAllUsersInput.Output, m.GetAllUsersInput.Err
 }
 
-func (m mockUserService) CreateUser(email string) (bool, error) {
-	fmt.Println("fired to mock CreateUser")
-	fmt.Println("mock result: ", m.mockCreateUserResult)
-
-	assert.Equal(m.TestF, m.mockCreateUserInput, email)
-
-	return m.mockCreateUserResult, m.mockError
+func (m mockUserRetrieverService) GetUser(string) (models.User, error) {
+	return models.User{}, nil
 }
 
-func (m mockRelationshipService) MakeFriend(firstEmail, secondEmail string) (bool, error) {
-	fmt.Println("fired to mock MakeFriend")
-	fmt.Println("mock result: ", m.mockMakeFriendResult)
+func (m mockUserCreatorService) CreateUser(email string) (bool, error) {
+	assert.Equal(m.TestF, m.CreateUserInput.Input, email)
 
-	assert.Equal(m.TestF, m.mockMakeFriendFirstInput, firstEmail)
-	assert.Equal(m.TestF, m.mockMakeFriendSecondInput, secondEmail)
-
-	return m.mockMakeFriendResult, m.mockError
+	return m.CreateUserInput.Output, m.CreateUserInput.Err
 }
-
-func (m mockRelationshipService) GetFriendsList(email string) ([]string, error) {
-	panic("implement me")
-}
-
-func (m mockRelationshipService) GetCommonFriends(firstEmail, secondEmail string) ([]string, error) {
-	panic("implement me")
-}
-
-// GetFriendsList(email string) ([]string, error)
-// GetCommonFriends(firstEmail, secondEmail string) ([]string, error)

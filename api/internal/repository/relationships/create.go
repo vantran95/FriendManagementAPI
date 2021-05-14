@@ -1,15 +1,8 @@
 package relationships
 
 import (
-	"database/sql"
-
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 )
-
-// NewRelationshipRepository use for create database to write unit test.
-func NewRelationshipRepository(db *sql.DB) RepositoryImpl {
-	return RepositoryImpl{DB: db}
-}
 
 // CreateRelationship attempts to create relationship between 2 email addresses.
 func (r RepositoryImpl) CreateRelationship(relationship models.Relationship) (bool, error) {

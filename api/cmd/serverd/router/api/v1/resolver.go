@@ -1,6 +1,11 @@
 package v1
 
-type Resolver struct {
-	UserSrv         UserService
-	RelationshipSrv RelationshipService
+type RetrieveResolver struct {
+	UserService         userRetrieverService
+	RelationshipService relationshipRetrieverService
+}
+
+type CreateResolver struct {
+	UserService         userCreatorService
+	RelationshipService relationshipCreatorService
 }

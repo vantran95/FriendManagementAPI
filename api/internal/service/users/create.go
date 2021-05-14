@@ -1,16 +1,22 @@
 package users
 
-import "errors"
+import (
+	"errors"
+	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
+)
+
+type createRepository interface {
+	GetUser(email string) (*models.User, error)
+	CreateUser(email string) (bool, error)
+}
 
 // CreateUser attempts to create a user
 func (s ServiceImpl) CreateUser(email string) (bool, error) {
-	getUser, err := s.Repository.GetUser(email)
-	if err != nil {
-		return false, err
+	getUser, _ := s.CreateRepo.GetUser(email)
+
+	if getUser != nil {
+		return false, errors.New("user already exist")
 	}
 
-	if getUser.Email != "" {
-		return false, errors.New("email already exists")
-	}
-	return s.Repository.CreateUser(email)
+	return s.CreateRepo.CreateUser(email)
 }

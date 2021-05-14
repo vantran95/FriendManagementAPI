@@ -2,7 +2,7 @@ package router
 
 import (
 	"database/sql"
-	v1 "github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/v1"
+	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/v1"
 	relationshipRepo "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/repository/relationships"
 	userRepo "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/repository/users"
 	relationshipService "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/service/relationships"
@@ -18,32 +18,47 @@ func HandleRequest(db *sql.DB) {
 	routes := chi.NewRouter()
 
 	// Route for user API
-	routes.Get("/v1/users", initUserAPIResolver(db).GetAllUsers)
-	routes.Post("/v1/users/create-user", initUserAPIResolver(db).CreateUser)
+	routes.Get("/v1/users", initRetrieveResolver(db).GetAllUsers)
+	routes.Post("/v1/users/create-user", initCreateResolver(db).CreateUser)
 
 	// Route for relationship API
-	routes.Post("/v1/friend/create-friend", initRelationshipAPIResolver(db).CreateFriend)
-	routes.Post("/v1/friend/get-friends-list", initRelationshipAPIResolver(db).GetFriendsList)
-	routes.Post("/v1/friend/get-common-friends-list", initRelationshipAPIResolver(db).GetCommonFriends)
+	routes.Post("/v1/friend/create-friend", initCreateResolver(db).CreateFriend)
+	routes.Post("/v1/friend/get-friends-list", initRetrieveResolver(db).GetFriendsList)
+	routes.Post("/v1/friend/get-common-friends-list", initRetrieveResolver(db).GetCommonFriends)
 
-	log.Fatal(http.ListenAndServe(":8083", routes))
+	log.Fatal(http.ListenAndServe(":8082", routes))
 }
 
-func initUserAPIResolver(db *sql.DB) v1.Resolver {
-	return v1.Resolver{
-		UserSrv: userService.ServiceImpl{
-			Repository: userRepo.RepositoryImpl{DB: db},
+func initRetrieveResolver(db *sql.DB) v1.RetrieveResolver {
+	return v1.RetrieveResolver{
+		UserService: userService.ServiceImpl{
+			CreateRepo:   userRepo.RepositoryImpl{DB: db},
+			RetrieveRepo: userRepo.RepositoryImpl{DB: db},
+		},
+		RelationshipService: relationshipService.ServiceImpl{
+			CreateRepo:   relationshipRepo.RepositoryImpl{DB: db},
+			RetrieveRepo: relationshipRepo.RepositoryImpl{DB: db},
+			UserServiceRetriever: userService.ServiceImpl{
+				CreateRepo:   userRepo.RepositoryImpl{DB: db},
+				RetrieveRepo: userRepo.RepositoryImpl{DB: db},
+			},
 		},
 	}
 }
 
-func initRelationshipAPIResolver(db *sql.DB) v1.Resolver {
-	return v1.Resolver{
-		RelationshipSrv: relationshipService.ServiceImpl{
-			UserService: userService.ServiceImpl{
-				Repository: userRepo.RepositoryImpl{DB: db},
+func initCreateResolver(db *sql.DB) v1.CreateResolver {
+	return v1.CreateResolver{
+		UserService: userService.ServiceImpl{
+			CreateRepo:   userRepo.RepositoryImpl{DB: db},
+			RetrieveRepo: userRepo.RepositoryImpl{DB: db},
+		},
+		RelationshipService: relationshipService.ServiceImpl{
+			CreateRepo:   relationshipRepo.RepositoryImpl{DB: db},
+			RetrieveRepo: relationshipRepo.RepositoryImpl{DB: db},
+			UserServiceRetriever: userService.ServiceImpl{
+				CreateRepo:   userRepo.RepositoryImpl{DB: db},
+				RetrieveRepo: userRepo.RepositoryImpl{DB: db},
 			},
-			Repository: relationshipRepo.RepositoryImpl{DB: db},
 		},
 	}
 }
