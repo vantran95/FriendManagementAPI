@@ -38,7 +38,7 @@ func (r RepositoryImpl) GetRelationships(fromID, toID int64) ([]models.Relations
 }
 
 // GetFriendsList attempts to retrieve a friends list of a email id
-func (r RepositoryImpl) GetFriendsList(emailID int64) ([]models.User, error) {
+func (r RepositoryImpl) GetFriendsList(emailID int64) (*[]models.User, error) {
 	qr := `select u.id, u.email
 			from users u
          		join relationships r on r.second_email_id = u.id
@@ -57,7 +57,7 @@ func (r RepositoryImpl) GetFriendsList(emailID int64) ([]models.User, error) {
 	results, err := r.DB.Query(query)
 
 	if err != nil {
-		return []models.User{}, err
+		return nil, err
 	}
 
 	var users []models.User
@@ -69,5 +69,5 @@ func (r RepositoryImpl) GetFriendsList(emailID int64) ([]models.User, error) {
 		users = append(users, user)
 	}
 
-	return users, nil
+	return &users, nil
 }

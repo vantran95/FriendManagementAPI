@@ -1,7 +1,6 @@
 package relationships
 
 import (
-	"errors"
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 )
 
@@ -11,7 +10,7 @@ type userServiceRetriever interface {
 
 type retrieveRepository interface {
 	GetRelationships(fromID, toID int64) ([]models.Relationship, error)
-	GetFriendsList(emailID int64) ([]models.User, error)
+	GetFriendsList(emailID int64) (*[]models.User, error)
 }
 
 // GetFriendsList attempts to retrieve a list of friends through a email.
@@ -26,7 +25,7 @@ func (s ServiceImpl) GetFriendsList(email string) ([]string, error) {
 
 	// Get list friend
 	getFriendsList, _ := s.RetrieveRepo.GetFriendsList(getUser.ID)
-	for _, f := range getFriendsList {
+	for _, f := range *getFriendsList {
 		friendEmail := f.Email
 		emails = append(emails, friendEmail)
 	}
@@ -54,9 +53,9 @@ func (s ServiceImpl) GetCommonFriends(firstEmail, secondEmail string) ([]string,
 		}
 	}
 
-	if len(commonEmails) == 0 {
-		return nil, errors.New("do not have common friends between two emails")
-	}
+	//if len(commonEmails) == 0 {
+	//	return nil, errors.New("do not have common friends between two emails")
+	//}
 
 	return commonEmails, nil
 }

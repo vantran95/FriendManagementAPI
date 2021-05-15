@@ -5,6 +5,13 @@ import (
 	"net/http"
 )
 
+//// Response stores info to retrieve response json
+type Response struct {
+	Success bool     `json:"success"`
+	Friends []string `json:"friends"`
+	Count   int      `json:"count"`
+}
+
 // Error stores info to retrieve error response json
 type Error struct {
 	Status      int

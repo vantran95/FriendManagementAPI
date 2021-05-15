@@ -3,6 +3,7 @@ package v1
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -41,6 +42,17 @@ func TestCreateUser(t *testing.T) {
 
 			expResult: response.Error{Status: http.StatusBadRequest, Code: "invalid_request_email", Description: "Invalid email format"},
 			expCode:   http.StatusBadRequest,
+		},
+		{
+			scenario: "user already exists",
+			mockAPIInput: userCreateInput{
+				Email: "a@gmail.com",
+			},
+			mockServiceInput:  "a@gmail.com",
+			mockServiceOutput: false,
+			mockServiceErr:    errors.New("email already exists"),
+			expResult:         response.Error{Status: http.StatusBadRequest, Code: "create_user", Description: "email already exists"},
+			expCode:           http.StatusBadRequest,
 		},
 	}
 
