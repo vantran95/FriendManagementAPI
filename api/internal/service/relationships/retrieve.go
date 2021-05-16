@@ -1,6 +1,7 @@
 package relationships
 
 import (
+	"errors"
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 )
 
@@ -18,9 +19,10 @@ func (s ServiceImpl) GetFriendsList(email string) ([]string, error) {
 	var emails []string
 
 	// Check email already created
-	getUser, err := s.UserServiceRetriever.GetUser(email)
-	if err != nil {
-		return nil, err
+	getUser, _ := s.UserServiceRetriever.GetUser(email)
+
+	if getUser == nil {
+		return []string{}, errors.New("user does not exist")
 	}
 
 	// Get list friend
