@@ -11,7 +11,7 @@ import (
 type mockUserRetrieverService struct {
 	TestF            *testing.T
 	GetAllUsersInput struct {
-		Output []models.User
+		Output *[]models.User
 		Err    error
 	}
 }
@@ -50,7 +50,7 @@ type mockRelationshipRetrieveSrv struct {
 	}
 }
 
-func (m mockUserRetrieverService) GetAllUsers() ([]models.User, error) {
+func (m mockUserRetrieverService) GetAllUsers() (*[]models.User, error) {
 	fmt.Println("fired to mock CreateUser")
 	fmt.Println("mock result: ", m.GetAllUsersInput.Output)
 	return m.GetAllUsersInput.Output, m.GetAllUsersInput.Err

@@ -13,7 +13,7 @@ type userResponse struct {
 }
 
 type userRetrieverService interface {
-	GetAllUsers() ([]models.User, error)
+	GetAllUsers() (*[]models.User, error)
 }
 
 func (rsv RetrieveResolver) GetAllUsers(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,7 @@ func (rsv RetrieveResolver) GetAllUsers(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	var userEmails []string
-	for _, u := range users {
+	for _, u := range *users {
 		userEmails = append(userEmails, u.Email)
 	}
 

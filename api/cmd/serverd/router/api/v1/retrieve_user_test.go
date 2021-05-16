@@ -49,9 +49,9 @@ func TestGetAllUsers(t *testing.T) {
 				UserService: mockUserRetrieverService{
 					TestF: t,
 					GetAllUsersInput: struct {
-						Output []models.User
+						Output *[]models.User
 						Err    error
-					}{Output: tc.mockServiceOutput, Err: tc.mockServiceErr},
+					}{Output: &tc.mockServiceOutput, Err: tc.mockServiceErr},
 				},
 			}
 

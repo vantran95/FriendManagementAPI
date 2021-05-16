@@ -53,11 +53,11 @@ func TestGetFriendsList(t *testing.T) {
 			mockServiceInput:  "a@gmail.com",
 			mockServiceOutput: nil,
 			expResult: response.Error{
-				Status:      400,
+				Status:      404,
 				Code:        "get_friend_list",
 				Description: "The user doesn't have friends",
 			},
-			expCode: http.StatusBadRequest,
+			expCode: http.StatusNotFound,
 		},
 	}
 
@@ -138,11 +138,11 @@ func TestGetCommonFriends(t *testing.T) {
 			mockServiceSecondInput: "b@gmail.com",
 			mockServiceOutput:      nil,
 			expResult: response.Error{
-				Status:      400,
+				Status:      404,
 				Code:        "get_common_friends",
 				Description: "Do not have common friends between two emails",
 			},
-			expCode: http.StatusBadRequest,
+			expCode: http.StatusNotFound,
 		},
 	}
 

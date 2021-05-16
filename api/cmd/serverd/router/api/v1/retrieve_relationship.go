@@ -44,7 +44,7 @@ func (rsv RetrieveResolver) GetFriendsList(w http.ResponseWriter, r *http.Reques
 	}
 
 	if results == nil {
-		response.ResponseJson(w, response.Error{Status: http.StatusBadRequest, Code: "get_friend_list", Description: "The user doesn't have friends"})
+		response.ResponseJson(w, response.Error{Status: http.StatusNotFound, Code: "get_friend_list", Description: "The user doesn't have friends"})
 		return
 	}
 
@@ -69,7 +69,7 @@ func (rsv RetrieveResolver) GetCommonFriends(w http.ResponseWriter, r *http.Requ
 	}
 
 	if results == nil {
-		response.ResponseJson(w, response.Error{Status: http.StatusBadRequest, Code: "get_common_friends", Description: "Do not have common friends between two emails"})
+		response.ResponseJson(w, response.Error{Status: http.StatusNotFound, Code: "get_common_friends", Description: "Do not have common friends between two emails"})
 		return
 	}
 

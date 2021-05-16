@@ -9,10 +9,10 @@ import (
 )
 
 // GetAllUsers get all users from table users.
-func (r RepositoryImpl) GetAllUsers() ([]models.User, error) {
+func (r RepositoryImpl) GetAllUsers() (*[]models.User, error) {
 	result, err := r.DB.Query("select id, email from users")
 	if err != nil {
-		return []models.User{}, err
+		return nil, err
 	}
 
 	var users []models.User
@@ -26,7 +26,11 @@ func (r RepositoryImpl) GetAllUsers() ([]models.User, error) {
 		user := models.User{ID: id, Email: email}
 		users = append(users, user)
 	}
-	return users, nil
+	// Check for no results
+	if len(users) == 0 {
+		return nil, errors.New("do not have users")
+	}
+	return &users, nil
 }
 
 func (r RepositoryImpl) GetUser(email string) (*models.User, error) {

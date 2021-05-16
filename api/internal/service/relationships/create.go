@@ -28,7 +28,7 @@ func (s ServiceImpl) MakeFriend(firstEmail, secondEmail string) (bool, error) {
 		return false, err
 	}
 
-	for _, item := range rs {
+	for _, item := range *rs {
 		switch item.Status {
 		case RelationshipTypeFriend:
 			return false, errors.New("already friended")

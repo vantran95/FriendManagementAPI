@@ -11,7 +11,7 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 	tcs := []struct {
 		scenario             string
 		input                string
-		mockGetUserOutput    models.User
+		mockGetUserOutput    *models.User
 		mockCreateUserOutput bool
 		mockErr              error
 		expResult            bool
@@ -20,15 +20,15 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 		{
 			scenario:             "success",
 			input:                "a@mail.com",
-			mockGetUserOutput:    models.User{},
+			mockGetUserOutput:    nil,
 			mockCreateUserOutput: true,
 			expResult:            true,
 		},
 		{
-			scenario:          "email existed",
+			scenario:          "user existed",
 			input:             "b@gmail.com",
-			mockGetUserOutput: models.User{Email: "b@gmail.com"},
-			expErr:            errors.New("email already exists"),
+			mockGetUserOutput: &models.User{ID: 2, Email: "b@gmail.com"},
+			expErr:            errors.New("user already exist"),
 		},
 	}
 
@@ -40,7 +40,7 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 					Input  string
 					Output *models.User
 					Err    error
-				}{Input: tc.input, Output: &tc.mockGetUserOutput, Err: tc.mockErr},
+				}{Input: tc.input, Output: tc.mockGetUserOutput, Err: tc.mockErr},
 				CreateUserInput: struct {
 					Input  string
 					Output bool
@@ -58,7 +58,6 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
 			}
-			assert.Equal(t, tc.expErr, err)
 		})
 	}
 }

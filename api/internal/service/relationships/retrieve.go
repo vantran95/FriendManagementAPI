@@ -9,7 +9,7 @@ type userServiceRetriever interface {
 }
 
 type retrieveRepository interface {
-	GetRelationships(fromID, toID int64) ([]models.Relationship, error)
+	GetRelationships(fromID, toID int64) (*[]models.Relationship, error)
 	GetFriendsList(emailID int64) (*[]models.User, error)
 }
 
@@ -61,6 +61,6 @@ func (s ServiceImpl) GetCommonFriends(firstEmail, secondEmail string) ([]string,
 }
 
 // getRelationships get relationship between two emails.
-func getRelationships(repo retrieveRepository, fromID, toID int64) ([]models.Relationship, error) {
+func getRelationships(repo retrieveRepository, fromID, toID int64) (*[]models.Relationship, error) {
 	return repo.GetRelationships(fromID, toID)
 }

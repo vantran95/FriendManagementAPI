@@ -8,7 +8,7 @@ import (
 )
 
 // GetRelationships attempts to retrieve a relationship through two email ids
-func (r RepositoryImpl) GetRelationships(fromID, toID int64) ([]models.Relationship, error) {
+func (r RepositoryImpl) GetRelationships(fromID, toID int64) (*[]models.Relationship, error) {
 	stmt := `select x.id, x.first_email_id, x.second_email_id, x.status
 			from relationships x
 			where x.first_email_id in (%s, %s)
@@ -23,7 +23,7 @@ func (r RepositoryImpl) GetRelationships(fromID, toID int64) ([]models.Relations
 
 	results, err := r.DB.Query(query)
 	if err != nil {
-		return []models.Relationship{}, err
+		return nil, err
 	}
 
 	var relationships []models.Relationship
@@ -34,7 +34,7 @@ func (r RepositoryImpl) GetRelationships(fromID, toID int64) ([]models.Relations
 		relationship := models.Relationship{ID: id, FirstEmailID: firstEmailID, SecondEmailID: secondEmailID, Status: status}
 		relationships = append(relationships, relationship)
 	}
-	return relationships, nil
+	return &relationships, nil
 }
 
 // GetFriendsList attempts to retrieve a friends list of a email id
