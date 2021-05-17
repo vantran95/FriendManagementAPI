@@ -74,3 +74,52 @@ func TestServiceImpl_GetAllUsers(t *testing.T) {
 		})
 	}
 }
+
+func TestServiceImpl_GetUser(t *testing.T) {
+	tcs := []struct {
+		scenario          string
+		input             string
+		mockGetUserOutput *models.User
+		mockErr           error
+		expResult         interface{}
+		expErr            error
+	}{
+		{
+			scenario:          "success",
+			input:             "a@gmail.com",
+			mockGetUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
+			expResult:         &models.User{ID: 1, Email: "a@gmail.com"},
+		},
+		{
+			scenario:          "do not have user",
+			input:             "a@gmail.com",
+			mockGetUserOutput: nil,
+			mockErr:           errors.New("do not have user"),
+			expErr:            errors.New("do not have user"),
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.scenario, func(t *testing.T) {
+			mockRepo := mockRetrieveRepository{
+				TestF: t,
+				GetUserInput: struct {
+					Input  string
+					Output *models.User
+					Err    error
+				}{Input: tc.input, Output: tc.mockGetUserOutput, Err: tc.mockErr},
+			}
+
+			service := ServiceImpl{
+				RetrieveRepo: mockRepo,
+			}
+
+			rs, err := service.GetUser(tc.input)
+
+			assert.Equal(t, tc.expErr, err)
+			if tc.expErr == nil {
+				assert.Equal(t, tc.expResult, rs)
+			}
+		})
+	}
+}

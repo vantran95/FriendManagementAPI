@@ -1,9 +1,10 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/response"
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
-	"net/http"
 )
 
 type userResponse struct {

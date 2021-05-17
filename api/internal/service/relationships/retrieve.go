@@ -2,6 +2,7 @@ package relationships
 
 import (
 	"errors"
+
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 )
 

@@ -2,15 +2,15 @@ package router
 
 import (
 	"database/sql"
+	"log"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/v1"
 	relationshipRepo "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/repository/relationships"
 	userRepo "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/repository/users"
 	relationshipService "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/service/relationships"
 	userService "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/service/users"
-	"log"
-	"net/http"
-
-	"github.com/go-chi/chi/v5"
 )
 
 // HandleRequest handle all request route
