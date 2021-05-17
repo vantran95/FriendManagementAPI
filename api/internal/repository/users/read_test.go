@@ -26,11 +26,11 @@ func TestRepositoryImpl_GetUser(t *testing.T) {
 			expResult:         &models.User{ID: 1, Email: "a@gmail.com"},
 		},
 		{
-			scenario:          "user does not exists",
-			input:             "a@mail.com",
-			mockGetUserOutput: nil,
-			mockErr:           errors.New("user does not exists"),
-			expErr:            errors.New("user does not exists"),
+			scenario: "user does not exists",
+			input:    "a@mail.com",
+
+			mockErr: errors.New("user does not exists"),
+			expErr:  errors.New("user does not exists"),
 		},
 	}
 	for _, tc := range tcs {
@@ -41,7 +41,10 @@ func TestRepositoryImpl_GetUser(t *testing.T) {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
 			defer db.Close()
-			rows := sqlmock.NewRows([]string{"id", "email"}).AddRow(tc.mockGetUserOutput.ID, tc.mockGetUserOutput.Email)
+			rows := sqlmock.NewRows([]string{"id", "email"})
+			if tc.mockGetUserOutput != nil {
+				rows.AddRow(tc.mockGetUserOutput.ID, tc.mockGetUserOutput.Email)
+			}
 			query := regexp.QuoteMeta(`select id, email from users where email=$1`)
 			mock.ExpectQuery(query).WithArgs(tc.input).WillReturnRows(rows)
 
