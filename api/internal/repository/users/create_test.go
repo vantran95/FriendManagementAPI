@@ -1,6 +1,7 @@
 package users
 
 import (
+	"errors"
 	"regexp"
 	"testing"
 
@@ -23,6 +24,11 @@ func TestRepositoryImpl_CreateUser(t *testing.T) {
 			mockCreateUserOutput: true,
 			expResult:            true,
 		},
+		{
+			scenario:             "email already exists",
+			input:                "a@mail.com",
+			mockCreateUserOutput: false,
+		},
 	}
 	for _, tc := range tcs {
 		t.Run(tc.scenario, func(t *testing.T) {
@@ -32,10 +38,12 @@ func TestRepositoryImpl_CreateUser(t *testing.T) {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
 			defer db.Close()
-			//mock.ExpectBegin()
 			query := regexp.QuoteMeta(`insert into users (email) values ($1)`)
-			mock.ExpectPrepare(query).ExpectExec().WithArgs(tc.input).WillReturnResult(sqlmock.NewResult(1, 1))
-
+			if tc.mockCreateUserOutput == true {
+				mock.ExpectPrepare(query).ExpectExec().WithArgs(tc.input).WillReturnResult(sqlmock.NewResult(1, 1))
+			} else {
+				mock.ExpectPrepare(query).ExpectExec().WithArgs(tc.input).WillReturnError(errors.New("email already exists"))
+			}
 			myDB := &RepositoryImpl{db}
 			result, _ := myDB.CreateUser(tc.input)
 			assert.Equal(t, tc.expErr, tc.mockErr)

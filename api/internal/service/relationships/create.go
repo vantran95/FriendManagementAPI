@@ -13,20 +13,18 @@ type createRepository interface {
 
 // MakeFriend attempts to create a relationship between two emails.
 func (s ServiceImpl) MakeFriend(firstEmail, secondEmail string) (bool, error) {
-	getFirstUser, err := s.UserServiceRetriever.GetUser(firstEmail)
+	firstUser, err := s.UserServiceRetriever.GetUser(firstEmail)
 	if err != nil {
 		return false, err
 	}
 
-	getSecondUser, err := s.UserServiceRetriever.GetUser(secondEmail)
+	secondUser, err := s.UserServiceRetriever.GetUser(secondEmail)
 	if err != nil {
 		return false, err
 	}
-
-	fmt.Println("passed to get second user, email: ", getSecondUser.Email)
 
 	// Get relationship and check friend
-	rs, err := getRelationships(s.RetrieveRepo, getFirstUser.ID, getSecondUser.ID)
+	rs, err := getRelationships(s.RetrieveRepo, firstUser.ID, secondUser.ID)
 	if err != nil {
 		return false, err
 	}
@@ -43,7 +41,7 @@ func (s ServiceImpl) MakeFriend(firstEmail, secondEmail string) (bool, error) {
 		}
 	}
 
-	relationship := models.Relationship{FirstEmailID: getFirstUser.ID, SecondEmailID: getSecondUser.ID, Status: RelationshipTypeFriend}
+	relationship := models.Relationship{FirstEmailID: firstUser.ID, SecondEmailID: secondUser.ID, Status: RelationshipTypeFriend}
 
 	return s.CreateRepo.CreateRelationship(relationship)
 }

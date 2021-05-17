@@ -1,6 +1,7 @@
 package relationships
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -22,10 +23,30 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 		expErr           error
 	}{
 		{
-			scenario:  "success",
-			fromID:    int64(1),
-			toID:      int64(2),
-			expResult: nil,
+			scenario: "success",
+			fromID:   int64(1),
+			toID:     int64(2),
+			expResult: &[]models.Relationship{
+				{
+					ID:            1,
+					FirstEmailID:  1,
+					SecondEmailID: 2,
+					Status:        "FRIEND",
+				},
+			},
+		},
+		{
+			scenario:         "no relationship",
+			fromID:           int64(1),
+			toID:             int64(2),
+			mockGetRelOutput: nil,
+			expResult:        nil,
+		},
+		{
+			scenario: "invalid data input",
+			toID:     int64(2),
+			mockErr:  errors.New("invalid data input"),
+			expErr:   errors.New("invalid data input"),
 		},
 	}
 	for _, tc := range tcs {
@@ -37,6 +58,9 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 			}
 			defer db.Close()
 			rows := sqlmock.NewRows([]string{"id", "first_email_id", "second_email_id", "status"})
+			if tc.mockGetRelOutput != nil && tc.fromID != 0 {
+				rows.AddRow(1, tc.fromID, tc.toID, "FRIEND")
+			}
 
 			stmt := `select x.id, x.first_email_id, x.second_email_id, x.status
 			from relationships x
@@ -49,69 +73,22 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 				strconv.FormatInt(tc.toID, 10),
 				strconv.FormatInt(tc.fromID, 10),
 				strconv.FormatInt(tc.toID, 10))
-			mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
+
+			if tc.fromID == 0 {
+				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnError(errors.New("invalid data input"))
+			} else {
+				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
+			}
 
 			myDB := &RepositoryImpl{db}
 			result, err := myDB.GetRelationships(tc.fromID, tc.toID)
-			assert.Nil(t, result)
-			//assert.Error(t, err)
-			//if tc.expErr == nil {
-			//	assert.Equal(t, tc.expResult, result)
-			//}
-		})
-	}
-}
-
-func TestRepositoryImpl_GetRelationshipsErr(t *testing.T) {
-	tcs := []struct {
-		scenario         string
-		fromID           int64
-		toID             int64
-		mockGetRelOutput *[]models.Relationship
-		mockErr          error
-		expResult        interface{}
-		expErr           error
-	}{
-		{
-			scenario: "error",
-			fromID:   int64(1),
-			toID:     int64(2),
-
-			//mockGetRelOutput: nil,
-			expResult: nil,
-		},
-	}
-	for _, tc := range tcs {
-		t.Run(tc.scenario, func(t *testing.T) {
-
-			db, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-			}
-			defer db.Close()
-			rows := sqlmock.NewRows([]string{"id", "first_email_id", "second_email_id", "status"})
-			for _, v := range *tc.mockGetRelOutput {
-				rows.AddRow(v.ID, v.FirstEmailID, v.SecondEmailID, v.Status)
-			}
-
-			stmt := `select x.id, x.first_email_id, x.second_email_id, x.status
-			from relationship x
-			where x.first_email_id in (%s, %s)
-			and x.second_email_id in (%s, %s);
-			`
-			query := fmt.Sprintf(
-				stmt,
-				strconv.FormatInt(tc.fromID, 10),
-				strconv.FormatInt(tc.toID, 10),
-				strconv.FormatInt(tc.fromID, 10),
-				strconv.FormatInt(tc.toID, 10))
-			mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
-
-			myDB := &RepositoryImpl{db}
-			result, err := myDB.GetRelationships(tc.fromID, tc.toID)
-			assert.Error(t, err)
+			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
-				assert.Equal(t, tc.expResult, result)
+				if tc.mockGetRelOutput == nil {
+					assert.Nil(t, result)
+				} else {
+					assert.Equal(t, tc.expResult, result)
+				}
 			}
 		})
 	}
@@ -142,6 +119,17 @@ func TestRepositoryImpl_GetFriendsList(t *testing.T) {
 				},
 			},
 		},
+		{
+			scenario:                 "do not have friends list",
+			emailID:                  int64(1),
+			mockGetFriendsListOutput: nil,
+			expResult:                nil,
+		},
+		{
+			scenario: "invalid data input",
+			mockErr:  errors.New("invalid data input"),
+			expErr:   errors.New("invalid data input"),
+		},
 	}
 	for _, tc := range tcs {
 		t.Run(tc.scenario, func(t *testing.T) {
@@ -152,8 +140,10 @@ func TestRepositoryImpl_GetFriendsList(t *testing.T) {
 			}
 			defer db.Close()
 			rows := sqlmock.NewRows([]string{"id", "email"})
-			for _, v := range *tc.mockGetFriendsListOutput {
-				rows.AddRow(v.ID, v.Email)
+			if tc.mockGetFriendsListOutput != nil {
+				for _, v := range *tc.mockGetFriendsListOutput {
+					rows.AddRow(v.ID, v.Email)
+				}
 			}
 
 			stmt := `select u.id, u.email
@@ -170,13 +160,22 @@ func TestRepositoryImpl_GetFriendsList(t *testing.T) {
 				stmt,
 				strconv.FormatInt(tc.emailID, 10),
 				strconv.FormatInt(tc.emailID, 10))
-			mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
+			if tc.emailID == 0 {
+				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnError(errors.New("invalid data input"))
+			} else {
+				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
+			}
 
 			myDB := &RepositoryImpl{db}
 			result, _ := myDB.GetFriendsList(tc.emailID)
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
-				assert.Equal(t, tc.expResult, result)
+				if tc.mockGetFriendsListOutput == nil {
+					assert.Nil(t, result)
+				} else {
+					assert.Equal(t, tc.expResult, result)
+				}
+
 			}
 		})
 	}
