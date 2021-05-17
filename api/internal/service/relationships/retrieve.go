@@ -27,6 +27,9 @@ func (s ServiceImpl) GetFriendsList(email string) ([]string, error) {
 
 	// Get list friend
 	getFriendsList, _ := s.RetrieveRepo.GetFriendsList(getUser.ID)
+	if getFriendsList == nil {
+		return []string{}, errors.New("user does not have friend")
+	}
 	for _, f := range *getFriendsList {
 		friendEmail := f.Email
 		emails = append(emails, friendEmail)

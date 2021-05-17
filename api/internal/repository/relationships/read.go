@@ -34,6 +34,9 @@ func (r RepositoryImpl) GetRelationships(fromID, toID int64) (*[]models.Relation
 		relationship := models.Relationship{ID: id, FirstEmailID: firstEmailID, SecondEmailID: secondEmailID, Status: status}
 		relationships = append(relationships, relationship)
 	}
+	if len(relationships) == 0 {
+		return nil, nil
+	}
 	return &relationships, nil
 }
 
@@ -67,6 +70,10 @@ func (r RepositoryImpl) GetFriendsList(emailID int64) (*[]models.User, error) {
 		results.Scan(&id, &email)
 		user := models.User{ID: id, Email: email}
 		users = append(users, user)
+	}
+
+	if len(users) == 0 {
+		return nil, nil
 	}
 
 	return &users, nil

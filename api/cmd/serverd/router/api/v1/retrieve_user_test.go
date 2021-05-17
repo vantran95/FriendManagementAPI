@@ -2,11 +2,12 @@ package v1
 
 import (
 	"encoding/json"
-	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetAllUsers(t *testing.T) {

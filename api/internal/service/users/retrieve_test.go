@@ -2,9 +2,10 @@ package users
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestServiceImpl_GetAllUsers(t *testing.T) {

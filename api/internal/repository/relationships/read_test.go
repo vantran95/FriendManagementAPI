@@ -2,12 +2,13 @@ package relationships
 
 import (
 	"fmt"
-	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
-	"github.com/stretchr/testify/assert"
-	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"regexp"
 	"strconv"
 	"testing"
+
+	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
 func TestRepositoryImpl_GetRelationships(t *testing.T) {
@@ -21,25 +22,63 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 		expErr           error
 	}{
 		{
-			scenario: "success",
+			scenario:  "success",
+			fromID:    int64(1),
+			toID:      int64(2),
+			expResult: nil,
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.scenario, func(t *testing.T) {
+
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+			rows := sqlmock.NewRows([]string{"id", "first_email_id", "second_email_id", "status"})
+
+			stmt := `select x.id, x.first_email_id, x.second_email_id, x.status
+			from relationships x
+			where x.first_email_id in (%s, %s)
+			and x.second_email_id in (%s, %s);
+			`
+			query := fmt.Sprintf(
+				stmt,
+				strconv.FormatInt(tc.fromID, 10),
+				strconv.FormatInt(tc.toID, 10),
+				strconv.FormatInt(tc.fromID, 10),
+				strconv.FormatInt(tc.toID, 10))
+			mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
+
+			myDB := &RepositoryImpl{db}
+			result, err := myDB.GetRelationships(tc.fromID, tc.toID)
+			assert.Nil(t, result)
+			//assert.Error(t, err)
+			//if tc.expErr == nil {
+			//	assert.Equal(t, tc.expResult, result)
+			//}
+		})
+	}
+}
+
+func TestRepositoryImpl_GetRelationshipsErr(t *testing.T) {
+	tcs := []struct {
+		scenario         string
+		fromID           int64
+		toID             int64
+		mockGetRelOutput *[]models.Relationship
+		mockErr          error
+		expResult        interface{}
+		expErr           error
+	}{
+		{
+			scenario: "error",
 			fromID:   int64(1),
 			toID:     int64(2),
-			mockGetRelOutput: &[]models.Relationship{
-				{
-					ID:            1,
-					FirstEmailID:  1,
-					SecondEmailID: 2,
-					Status:        "FRIEND",
-				},
-			},
-			expResult: &[]models.Relationship{
-				{
-					ID:            1,
-					FirstEmailID:  1,
-					SecondEmailID: 2,
-					Status:        "FRIEND",
-				},
-			},
+
+			//mockGetRelOutput: nil,
+			expResult: nil,
 		},
 	}
 	for _, tc := range tcs {
@@ -56,7 +95,7 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 			}
 
 			stmt := `select x.id, x.first_email_id, x.second_email_id, x.status
-			from relationships x
+			from relationship x
 			where x.first_email_id in (%s, %s)
 			and x.second_email_id in (%s, %s);
 			`
@@ -69,8 +108,8 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 			mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
 
 			myDB := &RepositoryImpl{db}
-			result, _ := myDB.GetRelationships(tc.fromID, tc.toID)
-			assert.Equal(t, tc.expErr, tc.mockErr)
+			result, err := myDB.GetRelationships(tc.fromID, tc.toID)
+			assert.Error(t, err)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)
 			}
