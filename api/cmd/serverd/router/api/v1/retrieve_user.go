@@ -7,16 +7,21 @@ import (
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 )
 
-type userResponse struct {
-	Success bool     `json:"success"`
-	Users   []string `json:"users"`
-	Count   int      `json:"count"`
-}
+type (
+	// userResponse stores info json of user response
+	userResponse struct {
+		Success bool     `json:"success"`
+		Users   []string `json:"users"`
+		Count   int      `json:"count"`
+	}
 
-type userRetrieverService interface {
-	GetAllUsers() (*[]models.User, error)
-}
+	// userRetrieverService interface represents the retrieve service used to retrieve a user info
+	userRetrieverService interface {
+		GetAllUsers() (*[]models.User, error)
+	}
+)
 
+// GetAllUsers is endpoint to retrieve users list
 func (rsv RetrieveResolver) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := rsv.UserService.GetAllUsers()
 	if err != nil {

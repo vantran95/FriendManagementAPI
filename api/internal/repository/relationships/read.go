@@ -1,7 +1,6 @@
 package relationships
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -36,7 +35,7 @@ func (r RepositoryImpl) GetRelationships(fromID, toID int64) (*[]models.Relation
 		relationships = append(relationships, relationship)
 	}
 	if len(relationships) == 0 {
-		return nil, errors.New("no relationship")
+		return nil, nil
 	}
 	return &relationships, nil
 }

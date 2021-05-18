@@ -2,7 +2,7 @@ package relationships
 
 // ServiceImpl stores info to retrieve relationship service.
 type ServiceImpl struct {
-	CreateRepo           createRepository
-	RetrieveRepo         retrieveRepository
-	UserServiceRetriever userServiceRetriever
+	CreateRepo    createRepository
+	RetrieveRepo  retrieveRepository
+	UserRetriever userRetriever
 }

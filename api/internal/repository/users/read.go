@@ -33,6 +33,7 @@ func (r RepositoryImpl) GetAllUsers() (*[]models.User, error) {
 	return &users, nil
 }
 
+// GetUser attempts to retrieve a user info
 func (r RepositoryImpl) GetUser(email string) (*models.User, error) {
 	var id int64
 	var userEmail string

@@ -51,8 +51,8 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 			input:    "a@gmail.com",
 
 			mockGetFriendsListOutput: nil,
-			mockServiceOutput:        []string{},
-			expResult:                []string{},
+			mockErr:                  errors.New("user does not have friend"),
+			expErr:                   errors.New("user does not have friend"),
 		},
 	}
 	for _, tc := range tcs {
@@ -87,15 +87,16 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 			}
 
 			service := ServiceImpl{
-				RetrieveRepo:         mockRepo,
-				UserServiceRetriever: mockUserServiceRetriever,
+				RetrieveRepo:  mockRepo,
+				UserRetriever: mockUserServiceRetriever,
 			}
 
-			rs, _ := service.GetFriendsList(tc.input)
+			rs, err := service.GetFriendsList(tc.input)
 
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -177,8 +178,9 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 					Email: "c@gmail.com",
 				},
 			},
-			mockServiceOutput: []string(nil),
-			expResult:         []string(nil),
+
+			mockErr: errors.New("do not have common friends between two emails"),
+			expErr:  errors.New("do not have common friends between two emails"),
 		},
 		{
 			scenario: "user does not have friend",
@@ -257,15 +259,16 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 				}}
 
 			service := ServiceImpl{
-				RetrieveRepo:         mockRepo,
-				UserServiceRetriever: mockUserServiceRetriever,
+				RetrieveRepo:  mockRepo,
+				UserRetriever: mockUserServiceRetriever,
 			}
 
-			rs, _ := service.GetCommonFriends(tc.firstInput, tc.secondInput)
+			rs, err := service.GetCommonFriends(tc.firstInput, tc.secondInput)
 
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
+				assert.NoError(t, err)
 			}
 		})
 	}

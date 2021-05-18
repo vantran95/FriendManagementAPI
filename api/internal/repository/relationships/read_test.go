@@ -51,12 +51,11 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 	}
 	for _, tc := range tcs {
 		t.Run(tc.scenario, func(t *testing.T) {
-
-			db, mock, err := sqlmock.New()
+			dbTest, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			defer db.Close()
+			defer dbTest.Close()
 			rows := sqlmock.NewRows([]string{"id", "first_email_id", "second_email_id", "status"})
 			if tc.mockGetRelOutput != nil && tc.fromID != 0 {
 				rows.AddRow(1, tc.fromID, tc.toID, "FRIEND")
@@ -80,7 +79,7 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
 			}
 
-			myDB := &RepositoryImpl{db}
+			myDB := &RepositoryImpl{dbTest}
 			result, err := myDB.GetRelationships(tc.fromID, tc.toID)
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
@@ -88,6 +87,7 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 					assert.Nil(t, result)
 				} else {
 					assert.Equal(t, tc.expResult, result)
+					assert.NoError(t, err)
 				}
 			}
 		})
@@ -133,12 +133,11 @@ func TestRepositoryImpl_GetFriendsList(t *testing.T) {
 	}
 	for _, tc := range tcs {
 		t.Run(tc.scenario, func(t *testing.T) {
-
-			db, mock, err := sqlmock.New()
+			dbTest, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			defer db.Close()
+			defer dbTest.Close()
 			rows := sqlmock.NewRows([]string{"id", "email"})
 			if tc.mockGetFriendsListOutput != nil {
 				for _, v := range *tc.mockGetFriendsListOutput {
@@ -166,16 +165,16 @@ func TestRepositoryImpl_GetFriendsList(t *testing.T) {
 				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
 			}
 
-			myDB := &RepositoryImpl{db}
-			result, _ := myDB.GetFriendsList(tc.emailID)
+			myDB := &RepositoryImpl{dbTest}
+			result, err := myDB.GetFriendsList(tc.emailID)
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				if tc.mockGetFriendsListOutput == nil {
 					assert.Nil(t, result)
 				} else {
 					assert.Equal(t, tc.expResult, result)
+					assert.NoError(t, err)
 				}
-
 			}
 		})
 	}

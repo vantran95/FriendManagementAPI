@@ -7,17 +7,20 @@ import (
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/response"
 )
 
-// comment
-type createFriendInput struct {
-	Friends []string `json:"friends"`
-}
+type (
+	// createFriendInput stores info to retrieve a json of friend response
+	createFriendInput struct {
+		Friends []string `json:"friends"`
+	}
 
-type relationshipCreatorService interface {
-	MakeFriend(firstEmail, secondEmail string) (bool, error)
-}
+	// relationshipCreatorService interface represents the create relationship service
+	relationshipCreatorService interface {
+		MakeFriend(firstEmail, secondEmail string) (bool, error)
+	}
+)
 
-// CreateFriend is endpoint to create friend connection between 2 emails addresses.
-func (rsv CreateResolver) CreateFriend(w http.ResponseWriter, r *http.Request) {
+// MakeFriend is endpoint to make friend connection between 2 emails addresses.
+func (rsv CreateResolver) MakeFriend(w http.ResponseWriter, r *http.Request) {
 	var input createFriendInput
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {

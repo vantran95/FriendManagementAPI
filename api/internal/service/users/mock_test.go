@@ -7,32 +7,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockCreateRepository struct {
-	TestF        *testing.T
-	GetUserInput struct {
-		Input  string
-		Output *models.User
-		Err    error
+type (
+	mockCreateRepository struct {
+		TestF        *testing.T
+		GetUserInput struct {
+			Input  string
+			Output *models.User
+			Err    error
+		}
+		CreateUserInput struct {
+			Input  string
+			Output bool
+			Err    error
+		}
 	}
-	CreateUserInput struct {
-		Input  string
-		Output bool
-		Err    error
-	}
-}
 
-type mockRetrieveRepository struct {
-	TestF        *testing.T
-	GetUserInput struct {
-		Input  string
-		Output *models.User
-		Err    error
+	mockRetrieveRepository struct {
+		TestF        *testing.T
+		GetUserInput struct {
+			Input  string
+			Output *models.User
+			Err    error
+		}
+		GetAllUsersInput struct {
+			Output *[]models.User
+			Err    error
+		}
 	}
-	GetAllUsersInput struct {
-		Output *[]models.User
-		Err    error
-	}
-}
+)
 
 func (m mockCreateRepository) GetUser(email string) (*models.User, error) {
 	assert.Equal(m.TestF, m.GetUserInput.Input, email)

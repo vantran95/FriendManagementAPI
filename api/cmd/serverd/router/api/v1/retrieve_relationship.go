@@ -7,26 +7,30 @@ import (
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/response"
 )
 
-// comment
-type getFriendsInput struct {
-	Email string `json:"email"`
-}
+type (
+	// getFriendsInput stores info to retrieve friend input json
+	getFriendsInput struct {
+		Email string `json:"email"`
+	}
 
-// comment
-type getCommonFriendsInput struct {
-	Friends []string `json:"friends"`
-}
+	// getCommonFriendsInput stores info to retrieve common friend input json
+	getCommonFriendsInput struct {
+		Friends []string `json:"friends"`
+	}
 
-type friendsResponse struct {
-	Success bool     `json:"success"`
-	Friends []string `json:"friends"`
-	Count   int      `json:"count"`
-}
+	// friendsResponse stores info json of friend response
+	friendsResponse struct {
+		Success bool     `json:"success"`
+		Friends []string `json:"friends"`
+		Count   int      `json:"count"`
+	}
 
-type relationshipRetrieverService interface {
-	GetFriendsList(email string) ([]string, error)
-	GetCommonFriends(firstEmail, secondEmail string) ([]string, error)
-}
+	// relationshipRetrieverService interface represents the retrieve service used to retrieve relationships
+	relationshipRetrieverService interface {
+		GetFriendsList(email string) ([]string, error)
+		GetCommonFriends(firstEmail, secondEmail string) ([]string, error)
+	}
+)
 
 // GetFriendsList is endpoint to retrieve friends list connected with email
 func (rsv RetrieveResolver) GetFriendsList(w http.ResponseWriter, r *http.Request) {

@@ -7,18 +7,19 @@ import (
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 )
 
+// createRepository interface represents the create a relationship repository
 type createRepository interface {
 	CreateRelationship(relationship models.Relationship) (bool, error)
 }
 
-// MakeFriend attempts to create a relationship between two emails.
+// MakeFriend attempts to create a friend relationship between two emails.
 func (s ServiceImpl) MakeFriend(firstEmail, secondEmail string) (bool, error) {
-	firstUser, err := s.UserServiceRetriever.GetUser(firstEmail)
+	firstUser, err := s.UserRetriever.GetUser(firstEmail)
 	if err != nil {
 		return false, err
 	}
 
-	secondUser, err := s.UserServiceRetriever.GetUser(secondEmail)
+	secondUser, err := s.UserRetriever.GetUser(secondEmail)
 	if err != nil {
 		return false, err
 	}

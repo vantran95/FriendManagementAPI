@@ -1,11 +1,15 @@
 package v1
 
-type RetrieveResolver struct {
-	UserService         userRetrieverService
-	RelationshipService relationshipRetrieverService
-}
+type (
+	// RetrieveResolver stores info to retrieve a resolver
+	RetrieveResolver struct {
+		UserService         userRetrieverService
+		RelationshipService relationshipRetrieverService
+	}
 
-type CreateResolver struct {
-	UserService         userCreatorService
-	RelationshipService relationshipCreatorService
-}
+	// CreateResolver stores info to create a resolver
+	CreateResolver struct {
+		UserService         userCreatorService
+		RelationshipService relationshipCreatorService
+	}
+)

@@ -67,9 +67,10 @@ func TestServiceImpl_GetAllUsers(t *testing.T) {
 
 			rs, err := service.GetAllUsers()
 
-			assert.Equal(t, tc.expErr, err)
+			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -116,9 +117,10 @@ func TestServiceImpl_GetUser(t *testing.T) {
 
 			rs, err := service.GetUser(tc.input)
 
-			assert.Equal(t, tc.expErr, err)
+			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
+				assert.NoError(t, err)
 			}
 		})
 	}

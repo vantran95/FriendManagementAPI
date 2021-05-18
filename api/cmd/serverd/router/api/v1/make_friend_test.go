@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateFriend(t *testing.T) {
+func TestMakeFriend(t *testing.T) {
 	tcs := []struct {
 		scenario             string
 		mockAPIInput         createFriendInput
@@ -92,7 +92,7 @@ func TestCreateFriend(t *testing.T) {
 				},
 			}
 
-			handler := http.HandlerFunc(mockResolver.CreateFriend)
+			handler := http.HandlerFunc(mockResolver.MakeFriend)
 			handler.ServeHTTP(rr, req)
 
 			byteResult, _ := json.Marshal(tc.expResult)

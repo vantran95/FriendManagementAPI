@@ -9,9 +9,6 @@ func (r RepositoryImpl) CreateUser(email string) (bool, error) {
 	}
 
 	_, err = query.Exec(email)
-	if err != nil {
-		return false, err
-	}
 
-	return true, nil
+	return err == nil, err
 }

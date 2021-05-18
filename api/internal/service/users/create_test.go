@@ -29,6 +29,7 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 			scenario:          "user existed",
 			input:             "b@gmail.com",
 			mockGetUserOutput: &models.User{ID: 2, Email: "b@gmail.com"},
+			mockErr:           errors.New("user already exist"),
 			expErr:            errors.New("user already exist"),
 		},
 	}
@@ -55,9 +56,10 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 
 			rs, err := service.CreateUser(tc.input)
 
-			assert.Equal(t, tc.expErr, err)
+			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
+				assert.NoError(t, err)
 			}
 		})
 	}

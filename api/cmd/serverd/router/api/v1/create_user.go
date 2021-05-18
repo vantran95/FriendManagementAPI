@@ -8,14 +8,17 @@ import (
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/response"
 )
 
-// comment here
-type userCreateInput struct {
-	Email string `json:"email"`
-}
+type (
+	// userCreateInput stores info to retrieve a json request
+	userCreateInput struct {
+		Email string `json:"email"`
+	}
 
-type userCreatorService interface {
-	CreateUser(email string) (bool, error)
-}
+	// userCreatorService interface represents the criteria used to retrieve a user service
+	userCreatorService interface {
+		CreateUser(email string) (bool, error)
+	}
+)
 
 // CreateUser retrieve a API to create user.
 func (rsv CreateResolver) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -44,6 +47,7 @@ func (rsv CreateResolver) CreateUser(w http.ResponseWriter, r *http.Request) {
 	response.ResponseJson(w, response.Result{Success: result})
 }
 
+// isValidEmail attempts to check email is valid
 func isValidEmail(email string) bool {
 	const emailRegex = "[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})"
 	re, _ := regexp.Compile(emailRegex)

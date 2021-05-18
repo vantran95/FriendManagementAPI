@@ -22,13 +22,14 @@ func HandleRequest(db *sql.DB) {
 	routes.Post("/v1/users/create-user", initCreateResolver(db).CreateUser)
 
 	// Route for relationship API
-	routes.Post("/v1/friend/create-friend", initCreateResolver(db).CreateFriend)
+	routes.Post("/v1/friend/create-friend", initCreateResolver(db).MakeFriend)
 	routes.Post("/v1/friend/get-friends-list", initRetrieveResolver(db).GetFriendsList)
 	routes.Post("/v1/friend/get-common-friends-list", initRetrieveResolver(db).GetCommonFriends)
 
 	log.Fatal(http.ListenAndServe(":8082", routes))
 }
 
+// initRetrieveResolver attempts to init a retrieve resolver
 func initRetrieveResolver(db *sql.DB) v1.RetrieveResolver {
 	return v1.RetrieveResolver{
 		UserService: userService.ServiceImpl{
@@ -38,7 +39,7 @@ func initRetrieveResolver(db *sql.DB) v1.RetrieveResolver {
 		RelationshipService: relationshipService.ServiceImpl{
 			CreateRepo:   relationshipRepo.RepositoryImpl{DB: db},
 			RetrieveRepo: relationshipRepo.RepositoryImpl{DB: db},
-			UserServiceRetriever: userService.ServiceImpl{
+			UserRetriever: userService.ServiceImpl{
 				CreateRepo:   userRepo.RepositoryImpl{DB: db},
 				RetrieveRepo: userRepo.RepositoryImpl{DB: db},
 			},
@@ -46,6 +47,7 @@ func initRetrieveResolver(db *sql.DB) v1.RetrieveResolver {
 	}
 }
 
+// initCreateResolver attempts to init a create resolver
 func initCreateResolver(db *sql.DB) v1.CreateResolver {
 	return v1.CreateResolver{
 		UserService: userService.ServiceImpl{
@@ -55,7 +57,7 @@ func initCreateResolver(db *sql.DB) v1.CreateResolver {
 		RelationshipService: relationshipService.ServiceImpl{
 			CreateRepo:   relationshipRepo.RepositoryImpl{DB: db},
 			RetrieveRepo: relationshipRepo.RepositoryImpl{DB: db},
-			UserServiceRetriever: userService.ServiceImpl{
+			UserRetriever: userService.ServiceImpl{
 				CreateRepo:   userRepo.RepositoryImpl{DB: db},
 				RetrieveRepo: userRepo.RepositoryImpl{DB: db},
 			},

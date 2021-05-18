@@ -127,16 +127,17 @@ func TestServiceImpl_MakeFriend(t *testing.T) {
 			}
 
 			service := ServiceImpl{
-				CreateRepo:           mockCreateRepo,
-				RetrieveRepo:         mockRetrieveRepo,
-				UserServiceRetriever: mockUserService,
+				CreateRepo:    mockCreateRepo,
+				RetrieveRepo:  mockRetrieveRepo,
+				UserRetriever: mockUserService,
 			}
 
-			rs, _ := service.MakeFriend(tc.firstInput, tc.secondInput)
+			rs, err := service.MakeFriend(tc.firstInput, tc.secondInput)
 
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
+				assert.NoError(t, err)
 			}
 		})
 	}

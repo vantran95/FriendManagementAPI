@@ -6,28 +6,39 @@ import (
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 )
 
-type userServiceRetriever interface {
-	GetUser(email string) (*models.User, error)
-}
+type (
+	// userRetriever interface represents the user retriever
+	userRetriever interface {
+		GetUser(email string) (*models.User, error)
+	}
 
-type retrieveRepository interface {
-	GetRelationships(fromID, toID int64) (*[]models.Relationship, error)
-	GetFriendsList(emailID int64) (*[]models.User, error)
-}
+	// retrieveRepository interface represents the retrieve repository
+	retrieveRepository interface {
+		GetRelationships(fromID, toID int64) (*[]models.Relationship, error)
+		GetFriendsList(emailID int64) (*[]models.User, error)
+	}
+)
 
 // GetFriendsList attempts to retrieve a list of friends through a email.
 func (s ServiceImpl) GetFriendsList(email string) ([]string, error) {
 	var emails []string
 
 	// Check email already created
-	getUser, _ := s.UserServiceRetriever.GetUser(email)
+	getUser, err := s.UserRetriever.GetUser(email)
+
+	if err != nil {
+		return []string{}, err
+	}
 
 	if getUser == nil {
 		return []string{}, errors.New("user does not exist")
 	}
 
 	// Get list friend
-	getFriendsList, _ := s.RetrieveRepo.GetFriendsList(getUser.ID)
+	getFriendsList, err := s.RetrieveRepo.GetFriendsList(getUser.ID)
+	if err != nil {
+		return []string{}, err
+	}
 	if getFriendsList == nil {
 		return []string{}, errors.New("user does not have friend")
 	}
@@ -59,9 +70,9 @@ func (s ServiceImpl) GetCommonFriends(firstEmail, secondEmail string) ([]string,
 		}
 	}
 
-	//if len(commonEmails) == 0 {
-	//	return nil, errors.New("do not have common friends between two emails")
-	//}
+	if len(commonEmails) == 0 {
+		return nil, errors.New("do not have common friends between two emails")
+	}
 
 	return commonEmails, nil
 }

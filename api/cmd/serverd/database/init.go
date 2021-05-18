@@ -3,6 +3,10 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"log"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type Database struct {
@@ -10,8 +14,11 @@ type Database struct {
 }
 
 func Initialize() (Database, error) {
-	// should be choose db type from env var, default is POSTGRES
-	dbType := "POSTGRES" // default db type
+	error := godotenv.Load(".env")
+	if error != nil {
+		log.Fatal("Error loading .env file")
+	}
+	dbType := os.Getenv("DB_TYPE")
 
 	conn, err := initDB(dbType)
 	if err != nil {
