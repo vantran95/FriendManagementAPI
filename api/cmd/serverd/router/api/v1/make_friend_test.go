@@ -14,23 +14,23 @@ import (
 
 func TestMakeFriend(t *testing.T) {
 	tcs := []struct {
-		scenario             string
-		mockAPIInput         createFriendInput
-		mockFirstEmailInput  string
-		mockSecondEmailInput string
-		mockServiceOutput    bool
-		mockServiceErr       error
-		expResult            interface{}
-		expCode              int
+		scenario              string
+		mockAPIInput          createFriendInput
+		mockRequestEmailInput string
+		mockTargetEmailInput  string
+		mockServiceOutput     bool
+		mockServiceErr        error
+		expResult             interface{}
+		expCode               int
 	}{
 		{
 			scenario: "success",
 			mockAPIInput: createFriendInput{
 				Friends: []string{"a@gmail.com", "b@gmail.com"},
 			},
-			mockFirstEmailInput:  "a@gmail.com",
-			mockSecondEmailInput: "b@gmail.com",
-			mockServiceOutput:    true,
+			mockRequestEmailInput: "a@gmail.com",
+			mockTargetEmailInput:  "b@gmail.com",
+			mockServiceOutput:     true,
 			expResult: response.Result{
 				Success: true,
 			},
@@ -41,10 +41,10 @@ func TestMakeFriend(t *testing.T) {
 			mockAPIInput: createFriendInput{
 				Friends: []string{"aaaaa@gmail.com", "b@gmail.com"},
 			},
-			mockFirstEmailInput:  "aaaaa@gmail.com",
-			mockSecondEmailInput: "b@gmail.com",
-			mockServiceOutput:    false,
-			mockServiceErr:       errors.New("user does not exists"),
+			mockRequestEmailInput: "aaaaa@gmail.com",
+			mockTargetEmailInput:  "b@gmail.com",
+			mockServiceOutput:     false,
+			mockServiceErr:        errors.New("user does not exists"),
 			expResult: response.Error{
 				Status:      400,
 				Code:        "make_friend",
@@ -57,10 +57,10 @@ func TestMakeFriend(t *testing.T) {
 			mockAPIInput: createFriendInput{
 				Friends: []string{"a@gmail.com", "b@gmail.com"},
 			},
-			mockFirstEmailInput:  "a@gmail.com",
-			mockSecondEmailInput: "b@gmail.com",
-			mockServiceOutput:    false,
-			mockServiceErr:       errors.New("already friended"),
+			mockRequestEmailInput: "a@gmail.com",
+			mockTargetEmailInput:  "b@gmail.com",
+			mockServiceOutput:     false,
+			mockServiceErr:        errors.New("already friended"),
 			expResult: response.Error{
 				Status:      400,
 				Code:        "make_friend",
@@ -84,11 +84,11 @@ func TestMakeFriend(t *testing.T) {
 				RelationshipService: mockRelationshipCreatorSrv{
 					TestF: t,
 					MakeFriendInput: struct {
-						FirstInput  string
-						SecondInput string
-						Output      bool
-						Err         error
-					}{FirstInput: tc.mockFirstEmailInput, SecondInput: tc.mockSecondEmailInput, Output: tc.mockServiceOutput, Err: tc.mockServiceErr},
+						RequestInput string
+						TargetInput  string
+						Output       bool
+						Err          error
+					}{RequestInput: tc.mockRequestEmailInput, TargetInput: tc.mockTargetEmailInput, Output: tc.mockServiceOutput, Err: tc.mockServiceErr},
 				},
 			}
 

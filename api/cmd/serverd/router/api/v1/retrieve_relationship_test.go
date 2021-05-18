@@ -15,7 +15,7 @@ import (
 func TestGetFriendsList(t *testing.T) {
 	tcs := []struct {
 		scenario          string
-		mockAPIInput      getFriendsInput
+		mockAPIInput      friendsInput
 		mockServiceInput  string
 		mockServiceOutput []string
 		mockServiceErr    error
@@ -24,7 +24,7 @@ func TestGetFriendsList(t *testing.T) {
 	}{
 		{
 			scenario: "success",
-			mockAPIInput: getFriendsInput{
+			mockAPIInput: friendsInput{
 				Email: "a@gmail.com",
 			},
 			mockServiceInput:  "a@gmail.com",
@@ -34,7 +34,7 @@ func TestGetFriendsList(t *testing.T) {
 		},
 		{
 			scenario: "user does not exist",
-			mockAPIInput: getFriendsInput{
+			mockAPIInput: friendsInput{
 				Email: "a@gmail.com",
 			},
 			mockServiceInput: "a@gmail.com",
@@ -48,17 +48,18 @@ func TestGetFriendsList(t *testing.T) {
 		},
 		{
 			scenario: "user does not have friends",
-			mockAPIInput: getFriendsInput{
+			mockAPIInput: friendsInput{
 				Email: "a@gmail.com",
 			},
 			mockServiceInput:  "a@gmail.com",
-			mockServiceOutput: nil,
+			mockServiceOutput: []string{},
+			mockServiceErr:    errors.New("user does not have friend"),
 			expResult: response.Error{
-				Status:      404,
+				Status:      400,
 				Code:        "get_friend_list",
-				Description: "The user doesn't have friends",
+				Description: "user does not have friend",
 			},
-			expCode: http.StatusNotFound,
+			expCode: http.StatusBadRequest,
 		},
 	}
 
@@ -95,34 +96,34 @@ func TestGetFriendsList(t *testing.T) {
 
 func TestGetCommonFriends(t *testing.T) {
 	tcs := []struct {
-		scenario               string
-		mockAPIInput           getCommonFriendsInput
-		mockServiceFirstInput  string
-		mockServiceSecondInput string
-		mockServiceOutput      []string
-		mockServiceErr         error
-		expResult              interface{}
-		expCode                int
+		scenario                string
+		mockAPIInput            commonFriendsInput
+		mockServiceRequestInput string
+		mockServiceTargetInput  string
+		mockServiceOutput       []string
+		mockServiceErr          error
+		expResult               interface{}
+		expCode                 int
 	}{
 		{
 			scenario: "success",
-			mockAPIInput: getCommonFriendsInput{
+			mockAPIInput: commonFriendsInput{
 				Friends: []string{"a@gmail.com", "b@gmail.com"},
 			},
-			mockServiceFirstInput:  "a@gmail.com",
-			mockServiceSecondInput: "b@gmail.com",
-			mockServiceOutput:      []string{"c@gmail.com"},
-			expResult:              friendsResponse{Success: true, Friends: []string{"c@gmail.com"}, Count: 1},
-			expCode:                http.StatusOK,
+			mockServiceRequestInput: "a@gmail.com",
+			mockServiceTargetInput:  "b@gmail.com",
+			mockServiceOutput:       []string{"c@gmail.com"},
+			expResult:               friendsResponse{Success: true, Friends: []string{"c@gmail.com"}, Count: 1},
+			expCode:                 http.StatusOK,
 		},
 		{
 			scenario: "user does not exist",
-			mockAPIInput: getCommonFriendsInput{
+			mockAPIInput: commonFriendsInput{
 				Friends: []string{"aaaa@gmail.com", "b@gmail.com"},
 			},
-			mockServiceFirstInput:  "aaaa@gmail.com",
-			mockServiceSecondInput: "b@gmail.com",
-			mockServiceErr:         errors.New("user does not exists"),
+			mockServiceRequestInput: "aaaa@gmail.com",
+			mockServiceTargetInput:  "b@gmail.com",
+			mockServiceErr:          errors.New("user does not exists"),
 			expResult: response.Error{
 				Status:      400,
 				Code:        "get_common_friends",
@@ -132,18 +133,19 @@ func TestGetCommonFriends(t *testing.T) {
 		},
 		{
 			scenario: "user does not have common friends",
-			mockAPIInput: getCommonFriendsInput{
+			mockAPIInput: commonFriendsInput{
 				Friends: []string{"a@gmail.com", "b@gmail.com"},
 			},
-			mockServiceFirstInput:  "a@gmail.com",
-			mockServiceSecondInput: "b@gmail.com",
-			mockServiceOutput:      nil,
+			mockServiceRequestInput: "a@gmail.com",
+			mockServiceTargetInput:  "b@gmail.com",
+			mockServiceOutput:       []string{},
+			mockServiceErr:          errors.New("do not have common friends between two emails"),
 			expResult: response.Error{
-				Status:      404,
+				Status:      400,
 				Code:        "get_common_friends",
-				Description: "Do not have common friends between two emails",
+				Description: "do not have common friends between two emails",
 			},
-			expCode: http.StatusNotFound,
+			expCode: http.StatusBadRequest,
 		},
 	}
 
@@ -161,11 +163,11 @@ func TestGetCommonFriends(t *testing.T) {
 				RelationshipService: mockRelationshipRetrieveSrv{
 					TestF: t,
 					GetCommonFriendsInput: struct {
-						FirstInput  string
-						SecondInput string
-						Output      []string
-						Err         error
-					}{FirstInput: tc.mockServiceFirstInput, SecondInput: tc.mockServiceSecondInput, Output: tc.mockServiceOutput, Err: tc.mockServiceErr},
+						RequestInput string
+						TargetInput  string
+						Output       []string
+						Err          error
+					}{RequestInput: tc.mockServiceRequestInput, TargetInput: tc.mockServiceTargetInput, Output: tc.mockServiceOutput, Err: tc.mockServiceErr},
 				},
 			}
 

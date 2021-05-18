@@ -1,8 +1,8 @@
 package relationships
 
 import (
+	"database/sql"
 	"errors"
-	"fmt"
 
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 )
@@ -13,36 +13,43 @@ type createRepository interface {
 }
 
 // MakeFriend attempts to create a friend relationship between two emails.
-func (s ServiceImpl) MakeFriend(firstEmail, secondEmail string) (bool, error) {
-	firstUser, err := s.UserRetriever.GetUser(firstEmail)
+func (s ServiceImpl) MakeFriend(requestEmail, targetEmail string) (bool, error) {
+	requestUser, err := s.UserRetriever.GetUser(requestEmail)
 	if err != nil {
-		return false, err
-	}
-
-	secondUser, err := s.UserRetriever.GetUser(secondEmail)
-	if err != nil {
-		return false, err
-	}
-
-	// Get relationship and check friend
-	rs, err := getRelationships(s.RetrieveRepo, firstUser.ID, secondUser.ID)
-	if err != nil {
-		return false, err
-	}
-
-	fmt.Println("passed to getRelationships")
-	if rs != nil {
-		for _, item := range *rs {
-			switch item.Status {
-			case RelationshipTypeFriend:
-				return false, errors.New("already friended")
-			case RelationshipTypeBlocked:
-				return false, errors.New("you were blocked")
-			}
+		switch {
+		case err == sql.ErrNoRows:
+			return false, errors.New("user does not exists")
+		case err != nil:
+			return false, err
 		}
 	}
 
-	relationship := models.Relationship{FirstEmailID: firstUser.ID, SecondEmailID: secondUser.ID, Status: RelationshipTypeFriend}
+	targetUser, err := s.UserRetriever.GetUser(targetEmail)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			return false, errors.New("user does not exists")
+		case err != nil:
+			return false, err
+		}
+	}
+
+	// Get relationship and check friend
+	rs, err := getRelationships(s.RetrieveRepo, requestUser.ID, targetUser.ID)
+	if err != nil {
+		return false, err
+	}
+
+	for _, item := range *rs {
+		switch item.Status {
+		case RelationshipTypeFriend:
+			return false, errors.New("already friended")
+		case RelationshipTypeBlocked:
+			return false, errors.New("you were blocked")
+		}
+	}
+
+	relationship := models.Relationship{RequestID: requestUser.ID, TargetID: targetUser.ID, Status: RelationshipTypeFriend}
 
 	return s.CreateRepo.CreateRelationship(relationship)
 }

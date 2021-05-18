@@ -3,21 +3,20 @@ package database
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
+const (
+	DBTypePostgres = "POSTGRES"
+)
+
+// Database stores info for database
 type Database struct {
 	Conn *sql.DB
 }
 
+// Initialize attempts to init a database
 func Initialize() (Database, error) {
-	error := godotenv.Load(".env")
-	if error != nil {
-		log.Fatal("Error loading .env file")
-	}
 	dbType := os.Getenv("DB_TYPE")
 
 	conn, err := initDB(dbType)
@@ -34,9 +33,10 @@ func Initialize() (Database, error) {
 	return db, nil
 }
 
+// initDB attempts to init a database follow data type
 func initDB(dbType string) (*sql.DB, error) {
 	switch dbType {
-	case "POSTGRES":
+	case DBTypePostgres:
 		return PostgresDB()
 	default:
 		return nil, errors.New("cannot init db")

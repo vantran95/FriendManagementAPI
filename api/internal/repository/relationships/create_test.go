@@ -12,25 +12,23 @@ import (
 
 func TestRepositoryImpl_CreateRelationship(t *testing.T) {
 	tcs := []struct {
-		scenario            string
-		input               models.Relationship
-		mockCreateRelOutput bool
-		mockErr             error
-		expResult           bool
-		expErr              error
+		scenario  string
+		input     models.Relationship
+		mockErr   error
+		expResult bool
+		expErr    error
 	}{
 		{
-			scenario:            "success",
-			input:               models.Relationship{FirstEmailID: 1, SecondEmailID: 2, Status: "FRIEND"},
-			mockCreateRelOutput: true,
-			expResult:           true,
+			scenario:  "success",
+			input:     models.Relationship{RequestID: 1, TargetID: 2, Status: "FRIEND"},
+			expResult: true,
 		},
 		{
-			scenario:            "invalid data input",
-			input:               models.Relationship{FirstEmailID: 1, Status: "FRIEND"},
-			mockCreateRelOutput: false,
-			mockErr:             errors.New("invalid second_email_id type"),
-			expErr:              errors.New("invalid second_email_id type"),
+			scenario:  "invalid data input",
+			input:     models.Relationship{RequestID: 1, Status: "FRIEND"},
+			expResult: false,
+			mockErr:   errors.New("invalid target_id type"),
+			expErr:    errors.New("invalid target_id type"),
 		},
 	}
 	for _, tc := range tcs {
@@ -42,21 +40,21 @@ func TestRepositoryImpl_CreateRelationship(t *testing.T) {
 			}
 			defer dbTest.Close()
 
-			query := regexp.QuoteMeta(`insert into relationships (first_email_id, second_email_id, status) values ($1, $2, $3);`)
-			if tc.mockCreateRelOutput == true {
+			query := regexp.QuoteMeta(`insert into relationships (request_id, target_id, status) values ($1, $2, $3);`)
+			if tc.expResult == true {
 				mock.ExpectPrepare(query).
 					ExpectExec().
-					WithArgs(tc.input.FirstEmailID, tc.input.SecondEmailID, tc.input.Status).
+					WithArgs(tc.input.RequestID, tc.input.TargetID, tc.input.Status).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			} else {
 				mock.ExpectPrepare(query).
 					ExpectExec().
-					WithArgs(tc.input.FirstEmailID, "b@gmail.com", tc.input.Status).
-					WillReturnError(errors.New("invalid second_email_id type"))
+					WithArgs(tc.input.RequestID, "b@gmail.com", tc.input.Status).
+					WillReturnError(errors.New("invalid target_id type"))
 			}
 
-			myDB := &RepositoryImpl{dbTest}
-			result, err := myDB.CreateRelationship(tc.input)
+			dbMock := &RepositoryImpl{dbTest}
+			result, err := dbMock.CreateRelationship(tc.input)
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)

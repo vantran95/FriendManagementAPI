@@ -31,10 +31,10 @@ type (
 	mockRetrieveRepository struct {
 		TestF                *testing.T
 		GetRelationshipInput struct {
-			FromInput int64
-			ToInput   int64
-			Output    *[]models.Relationship
-			Err       error
+			RequestInput int64
+			TargetInput  int64
+			Output       *[]models.Relationship
+			Err          error
 		}
 		GetFriendsListInput struct {
 			Group []struct {
@@ -62,9 +62,9 @@ func (m mockCreateRepository) CreateRelationship(relationship models.Relationshi
 	return m.CreateRelInput.Output, m.CreateRelInput.Err
 }
 
-func (m mockRetrieveRepository) GetRelationships(fromID, toID int64) (*[]models.Relationship, error) {
-	assert.Equal(m.TestF, m.GetRelationshipInput.FromInput, fromID)
-	assert.Equal(m.TestF, m.GetRelationshipInput.ToInput, toID)
+func (m mockRetrieveRepository) GetRelationships(requestID, targetID int64) (*[]models.Relationship, error) {
+	assert.Equal(m.TestF, m.GetRelationshipInput.RequestInput, requestID)
+	assert.Equal(m.TestF, m.GetRelationshipInput.TargetInput, targetID)
 
 	return m.GetRelationshipInput.Output, m.GetRelationshipInput.Err
 }

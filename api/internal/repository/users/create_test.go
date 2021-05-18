@@ -11,25 +11,23 @@ import (
 
 func TestRepositoryImpl_CreateUser(t *testing.T) {
 	tcs := []struct {
-		scenario             string
-		input                string
-		mockCreateUserOutput bool
-		mockErr              error
-		expResult            bool
-		expErr               error
+		scenario  string
+		input     string
+		mockErr   error
+		expResult bool
+		expErr    error
 	}{
 		{
-			scenario:             "success",
-			input:                "a@mail.com",
-			mockCreateUserOutput: true,
-			expResult:            true,
+			scenario:  "success",
+			input:     "a@mail.com",
+			expResult: true,
 		},
 		{
-			scenario:             "email already exists",
-			input:                "a@mail.com",
-			mockCreateUserOutput: false,
-			mockErr:              errors.New("email already exists"),
-			expErr:               errors.New("email already exists"),
+			scenario:  "email already exists",
+			input:     "a@mail.com",
+			expResult: false,
+			mockErr:   errors.New("email already exists"),
+			expErr:    errors.New("email already exists"),
 		},
 	}
 	for _, tc := range tcs {
@@ -40,13 +38,13 @@ func TestRepositoryImpl_CreateUser(t *testing.T) {
 			}
 			defer dbTest.Close()
 			query := regexp.QuoteMeta(`insert into users (email) values ($1)`)
-			if tc.mockCreateUserOutput == true {
+			if tc.expResult == true {
 				mock.ExpectPrepare(query).ExpectExec().WithArgs(tc.input).WillReturnResult(sqlmock.NewResult(1, 1))
 			} else {
 				mock.ExpectPrepare(query).ExpectExec().WithArgs(tc.input).WillReturnError(errors.New("email already exists"))
 			}
-			myDB := &RepositoryImpl{dbTest}
-			result, err := myDB.CreateUser(tc.input)
+			dbMock := &RepositoryImpl{dbTest}
+			result, err := dbMock.CreateUser(tc.input)
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)

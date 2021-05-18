@@ -11,15 +11,13 @@ import (
 func TestServiceImpl_GetAllUsers(t *testing.T) {
 	tcs := []struct {
 		scenario              string
-		mockGetUserOutput     *models.User
 		mockGetAllUsersOutput []models.User
 		mockErr               error
-		expResult             interface{}
+		expResult             []models.User
 		expErr                error
 	}{
 		{
-			scenario:          "success",
-			mockGetUserOutput: nil,
+			scenario: "success",
 			mockGetAllUsersOutput: []models.User{
 				{
 					ID:    1,
@@ -30,7 +28,7 @@ func TestServiceImpl_GetAllUsers(t *testing.T) {
 					Email: "b@gmail.com",
 				},
 			},
-			expResult: &[]models.User{
+			expResult: []models.User{
 				{
 					ID:    1,
 					Email: "a@gmail.com",
@@ -43,10 +41,9 @@ func TestServiceImpl_GetAllUsers(t *testing.T) {
 		},
 		{
 			scenario:              "do not have user",
-			mockGetUserOutput:     nil,
-			mockGetAllUsersOutput: nil,
+			mockGetAllUsersOutput: []models.User{},
 			mockErr:               errors.New("do not have user"),
-			expResult:             nil,
+			expResult:             []models.User{},
 			expErr:                errors.New("do not have user"),
 		},
 	}
@@ -70,7 +67,7 @@ func TestServiceImpl_GetAllUsers(t *testing.T) {
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
-				assert.NoError(t, err)
+				assert.NoError(t, tc.mockErr, err)
 			}
 		})
 	}
@@ -82,7 +79,7 @@ func TestServiceImpl_GetUser(t *testing.T) {
 		input             string
 		mockGetUserOutput *models.User
 		mockErr           error
-		expResult         interface{}
+		expResult         *models.User
 		expErr            error
 	}{
 		{
@@ -94,7 +91,7 @@ func TestServiceImpl_GetUser(t *testing.T) {
 		{
 			scenario:          "do not have user",
 			input:             "a@gmail.com",
-			mockGetUserOutput: nil,
+			mockGetUserOutput: &models.User{},
 			mockErr:           errors.New("do not have user"),
 			expErr:            errors.New("do not have user"),
 		},
@@ -120,7 +117,7 @@ func TestServiceImpl_GetUser(t *testing.T) {
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
-				assert.NoError(t, err)
+				assert.NoError(t, tc.mockErr, err)
 			}
 		})
 	}

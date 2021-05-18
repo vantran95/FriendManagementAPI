@@ -11,63 +11,62 @@ import (
 func TestServiceImpl_MakeFriend(t *testing.T) {
 	tcs := []struct {
 		scenario       string
-		firstInput     string
-		secondInput    string
+		requestInput   string
+		targetInput    string
 		createRelInput models.Relationship
 
-		mockGetFirstUserOutput  *models.User
-		mockGetSecondUserOutput *models.User
+		mockGetRequestUserOutput *models.User
+		mockGetTargetUserOutput  *models.User
 
 		mockGetRelOutput *[]models.Relationship
 
 		mockServiceOutput bool
 		mockErr           error
-		expResult         interface{}
+		expResult         bool
 		expErr            error
 	}{
 		{
-			scenario:    "success",
-			firstInput:  "a@gmail.com",
-			secondInput: "b@gmail.com",
+			scenario:     "success",
+			requestInput: "a@gmail.com",
+			targetInput:  "b@gmail.com",
 
-			createRelInput: models.Relationship{FirstEmailID: 1, SecondEmailID: 2, Status: "FRIEND"},
+			createRelInput: models.Relationship{RequestID: 1, TargetID: 2, Status: "FRIEND"},
 
-			mockGetFirstUserOutput:  &models.User{ID: 1, Email: "a@gmail.com"},
-			mockGetSecondUserOutput: &models.User{ID: 2, Email: "b@gmail.com"},
+			mockGetRequestUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
+			mockGetTargetUserOutput:  &models.User{ID: 2, Email: "b@gmail.com"},
 
-			mockGetRelOutput:  nil,
+			mockGetRelOutput:  &[]models.Relationship{},
 			mockServiceOutput: true,
 			expResult:         true,
 		},
 		{
 			scenario: "user do not exists",
 
-			firstInput:  "a@gmail.com",
-			secondInput: "b@gmail.com",
+			requestInput: "a@gmail.com",
+			targetInput:  "b@gmail.com",
 
-			mockGetFirstUserOutput:  &models.User{ID: 1, Email: "a@gmail.com"},
-			mockGetSecondUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
+			mockGetRequestUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
+			mockGetTargetUserOutput:  &models.User{ID: 1, Email: "a@gmail.com"},
 
 			mockErr: errors.New("user does not exists"),
 			expErr:  errors.New("user does not exists"),
 		},
 		{
-			scenario:    "already friended",
-			firstInput:  "a@gmail.com",
-			secondInput: "b@gmail.com",
+			scenario:     "already friended",
+			requestInput: "a@gmail.com",
+			targetInput:  "b@gmail.com",
 
-			createRelInput: models.Relationship{FirstEmailID: 1, SecondEmailID: 2, Status: "FRIEND"},
+			createRelInput: models.Relationship{RequestID: 1, TargetID: 2, Status: "FRIEND"},
 
-			mockGetFirstUserOutput:  &models.User{ID: 1, Email: "a@gmail.com"},
-			mockGetSecondUserOutput: &models.User{ID: 2, Email: "b@gmail.com"},
-			//mockGetRelOutput: nil,
+			mockGetRequestUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
+			mockGetTargetUserOutput:  &models.User{ID: 2, Email: "b@gmail.com"},
 
 			mockGetRelOutput: &[]models.Relationship{
 				{
-					ID:            1,
-					FirstEmailID:  1,
-					SecondEmailID: 2,
-					Status:        "FRIEND",
+					ID:        1,
+					RequestID: 1,
+					TargetID:  2,
+					Status:    "FRIEND",
 				},
 			},
 			mockServiceOutput: false,
@@ -95,13 +94,13 @@ func TestServiceImpl_MakeFriend(t *testing.T) {
 						Err    error
 					}{
 						{
-							Input:  tc.firstInput,
-							Output: tc.mockGetFirstUserOutput,
+							Input:  tc.requestInput,
+							Output: tc.mockGetRequestUserOutput,
 							Err:    tc.mockErr,
 						},
 						{
-							Input:  tc.secondInput,
-							Output: tc.mockGetSecondUserOutput,
+							Input:  tc.targetInput,
+							Output: tc.mockGetTargetUserOutput,
 							Err:    tc.mockErr,
 						},
 					},
@@ -110,11 +109,11 @@ func TestServiceImpl_MakeFriend(t *testing.T) {
 			mockRetrieveRepo := mockRetrieveRepository{
 				TestF: t,
 				GetRelationshipInput: struct {
-					FromInput int64
-					ToInput   int64
-					Output    *[]models.Relationship
-					Err       error
-				}{FromInput: tc.mockGetFirstUserOutput.ID, ToInput: tc.mockGetSecondUserOutput.ID, Output: tc.mockGetRelOutput, Err: tc.mockErr},
+					RequestInput int64
+					TargetInput  int64
+					Output       *[]models.Relationship
+					Err          error
+				}{RequestInput: tc.mockGetRequestUserOutput.ID, TargetInput: tc.mockGetTargetUserOutput.ID, Output: tc.mockGetRelOutput, Err: tc.mockErr},
 			}
 
 			mockCreateRepo := mockCreateRepository{
@@ -132,7 +131,7 @@ func TestServiceImpl_MakeFriend(t *testing.T) {
 				UserRetriever: mockUserService,
 			}
 
-			rs, err := service.MakeFriend(tc.firstInput, tc.secondInput)
+			rs, err := service.MakeFriend(tc.requestInput, tc.targetInput)
 
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {

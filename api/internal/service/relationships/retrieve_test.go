@@ -16,7 +16,7 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 		mockGetFriendsListOutput *[]models.User
 		mockServiceOutput        []string
 		mockErr                  error
-		expResult                interface{}
+		expResult                []string
 		expErr                   error
 	}{
 		{
@@ -42,7 +42,7 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 			scenario: "user does not exists",
 			input:    "a@gmail.com",
 
-			mockGetUserOutput: nil,
+			mockGetUserOutput: &models.User{},
 			mockErr:           errors.New("user does not exists"),
 			expErr:            errors.New("user does not exists"),
 		},
@@ -50,7 +50,7 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 			scenario: "user does not have friend",
 			input:    "a@gmail.com",
 
-			mockGetFriendsListOutput: nil,
+			mockGetFriendsListOutput: &[]models.User{},
 			mockErr:                  errors.New("user does not have friend"),
 			expErr:                   errors.New("user does not have friend"),
 		},
@@ -96,7 +96,7 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
-				assert.NoError(t, err)
+				assert.NoError(t, tc.expErr, err)
 			}
 		})
 	}
@@ -104,30 +104,30 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 
 func TestServiceImpl_GetCommonFriends(t *testing.T) {
 	tcs := []struct {
-		scenario    string
-		firstInput  string
-		secondInput string
+		scenario     string
+		requestInput string
+		targetInput  string
 
-		mockGetFirstUserOutput  *models.User
-		mockGetSecondUserOutput *models.User
+		mockGetRequestUserOutput *models.User
+		mockGetTargetUserOutput  *models.User
 
-		mockGetFirstFriendsListOutput  *[]models.User
-		mockGetSecondFriendsListOutput *[]models.User
+		mockGetRequestFriendsListOutput *[]models.User
+		mockGetTargetFriendsListOutput  *[]models.User
 
 		mockServiceOutput []string
 
 		mockErr   error
-		expResult interface{}
+		expResult []string
 		expErr    error
 	}{
 		{
-			scenario:                "success",
-			firstInput:              "a@gmail.com",
-			secondInput:             "b@gmail.com",
-			mockGetFirstUserOutput:  &models.User{ID: 1, Email: "a@gmail.com"},
-			mockGetSecondUserOutput: &models.User{ID: 2, Email: "b@gmail.com"},
+			scenario:                 "success",
+			requestInput:             "a@gmail.com",
+			targetInput:              "b@gmail.com",
+			mockGetRequestUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
+			mockGetTargetUserOutput:  &models.User{ID: 2, Email: "b@gmail.com"},
 
-			mockGetFirstFriendsListOutput: &[]models.User{
+			mockGetRequestFriendsListOutput: &[]models.User{
 				{
 					ID:    3,
 					Email: "c@gmail.com",
@@ -138,7 +138,7 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 				},
 			},
 
-			mockGetSecondFriendsListOutput: &[]models.User{
+			mockGetTargetFriendsListOutput: &[]models.User{
 				{
 					ID:    3,
 					Email: "c@gmail.com",
@@ -150,29 +150,30 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 			expResult: []string{"c@gmail.com"},
 		},
 		{
-			scenario:    "user does not exists",
-			firstInput:  "a@gmail.com",
-			secondInput: "b@gmail.com",
+			scenario:     "user does not exists",
+			requestInput: "a@gmail.com",
+			targetInput:  "b@gmail.com",
 
-			mockGetSecondUserOutput: &models.User{ID: 2, Email: "b@gmail.com"},
-			mockErr:                 errors.New("user does not exists"),
-			expErr:                  errors.New("user does not exists"),
+			mockGetRequestUserOutput: &models.User{},
+			mockGetTargetUserOutput:  &models.User{ID: 2, Email: "b@gmail.com"},
+			mockErr:                  errors.New("user does not exists"),
+			expErr:                   errors.New("user does not exists"),
 		},
 		{
-			scenario:    "do not have common friend",
-			firstInput:  "a@gmail.com",
-			secondInput: "b@gmail.com",
+			scenario:     "do not have common friend",
+			requestInput: "a@gmail.com",
+			targetInput:  "b@gmail.com",
 
-			mockGetFirstUserOutput:  &models.User{ID: 1, Email: "a@gmail.com"},
-			mockGetSecondUserOutput: &models.User{ID: 2, Email: "b@gmail.com"},
+			mockGetRequestUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
+			mockGetTargetUserOutput:  &models.User{ID: 2, Email: "b@gmail.com"},
 
-			mockGetFirstFriendsListOutput: &[]models.User{
+			mockGetRequestFriendsListOutput: &[]models.User{
 				{
 					ID:    4,
 					Email: "d@gmail.com",
 				},
 			},
-			mockGetSecondFriendsListOutput: &[]models.User{
+			mockGetTargetFriendsListOutput: &[]models.User{
 				{
 					ID:    3,
 					Email: "c@gmail.com",
@@ -185,14 +186,14 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 		{
 			scenario: "user does not have friend",
 
-			firstInput:              "a@gmail.com",
-			secondInput:             "b@gmail.com",
-			mockGetFirstUserOutput:  &models.User{ID: 1, Email: "a@gmail.com"},
-			mockGetSecondUserOutput: &models.User{ID: 2, Email: "b@gmail.com"},
+			requestInput:             "a@gmail.com",
+			targetInput:              "b@gmail.com",
+			mockGetRequestUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
+			mockGetTargetUserOutput:  &models.User{ID: 2, Email: "b@gmail.com"},
 
-			mockGetFirstFriendsListOutput: nil,
+			mockGetRequestFriendsListOutput: &[]models.User{},
 
-			mockGetSecondFriendsListOutput: &[]models.User{
+			mockGetTargetFriendsListOutput: &[]models.User{
 				{
 					ID:    3,
 					Email: "c@gmail.com",
@@ -220,12 +221,12 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 					}{
 						{
 							Input:  1,
-							Output: tc.mockGetFirstFriendsListOutput,
+							Output: tc.mockGetRequestFriendsListOutput,
 							Err:    tc.mockErr,
 						},
 						{
 							Input:  2,
-							Output: tc.mockGetSecondFriendsListOutput,
+							Output: tc.mockGetTargetFriendsListOutput,
 							Err:    tc.mockErr,
 						},
 					},
@@ -246,13 +247,13 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 						Err    error
 					}{
 						{
-							Input:  tc.firstInput,
-							Output: tc.mockGetFirstUserOutput,
+							Input:  tc.requestInput,
+							Output: tc.mockGetRequestUserOutput,
 							Err:    tc.mockErr,
 						},
 						{
-							Input:  tc.secondInput,
-							Output: tc.mockGetSecondUserOutput,
+							Input:  tc.targetInput,
+							Output: tc.mockGetTargetUserOutput,
 							Err:    tc.mockErr,
 						},
 					},
@@ -263,12 +264,12 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 				UserRetriever: mockUserServiceRetriever,
 			}
 
-			rs, err := service.GetCommonFriends(tc.firstInput, tc.secondInput)
+			rs, err := service.GetCommonFriends(tc.requestInput, tc.targetInput)
 
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
-				assert.NoError(t, err)
+				assert.NoError(t, tc.expErr, err)
 			}
 		})
 	}

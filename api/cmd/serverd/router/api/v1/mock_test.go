@@ -11,7 +11,7 @@ type (
 	mockUserRetrieverService struct {
 		TestF            *testing.T
 		GetAllUsersInput struct {
-			Output *[]models.User
+			Output []models.User
 			Err    error
 		}
 	}
@@ -28,10 +28,10 @@ type (
 	mockRelationshipCreatorSrv struct {
 		TestF           *testing.T
 		MakeFriendInput struct {
-			FirstInput  string
-			SecondInput string
-			Output      bool
-			Err         error
+			RequestInput string
+			TargetInput  string
+			Output       bool
+			Err          error
 		}
 	}
 
@@ -43,15 +43,15 @@ type (
 			Err    error
 		}
 		GetCommonFriendsInput struct {
-			FirstInput  string
-			SecondInput string
-			Output      []string
-			Err         error
+			RequestInput string
+			TargetInput  string
+			Output       []string
+			Err          error
 		}
 	}
 )
 
-func (m mockUserRetrieverService) GetAllUsers() (*[]models.User, error) {
+func (m mockUserRetrieverService) GetAllUsers() ([]models.User, error) {
 	return m.GetAllUsersInput.Output, m.GetAllUsersInput.Err
 }
 
@@ -65,9 +65,9 @@ func (m mockUserCreatorService) CreateUser(email string) (bool, error) {
 	return m.CreateUserInput.Output, m.CreateUserInput.Err
 }
 
-func (m mockRelationshipCreatorSrv) MakeFriend(firstEmail, secondEmail string) (bool, error) {
-	assert.Equal(m.TestF, m.MakeFriendInput.FirstInput, firstEmail)
-	assert.Equal(m.TestF, m.MakeFriendInput.SecondInput, secondEmail)
+func (m mockRelationshipCreatorSrv) MakeFriend(requestEmail, targetEmail string) (bool, error) {
+	assert.Equal(m.TestF, m.MakeFriendInput.RequestInput, requestEmail)
+	assert.Equal(m.TestF, m.MakeFriendInput.TargetInput, targetEmail)
 
 	return m.MakeFriendInput.Output, m.MakeFriendInput.Err
 }
@@ -78,9 +78,9 @@ func (m mockRelationshipRetrieveSrv) GetFriendsList(email string) ([]string, err
 	return m.GetFriendsListInput.Output, m.GetFriendsListInput.Err
 }
 
-func (m mockRelationshipRetrieveSrv) GetCommonFriends(firstEmail, secondEmail string) ([]string, error) {
-	assert.Equal(m.TestF, m.GetCommonFriendsInput.FirstInput, firstEmail)
-	assert.Equal(m.TestF, m.GetCommonFriendsInput.SecondInput, secondEmail)
+func (m mockRelationshipRetrieveSrv) GetCommonFriends(requestEmail, targetEmail string) ([]string, error) {
+	assert.Equal(m.TestF, m.GetCommonFriendsInput.RequestInput, requestEmail)
+	assert.Equal(m.TestF, m.GetCommonFriendsInput.TargetInput, targetEmail)
 
 	return m.GetCommonFriendsInput.Output, m.GetCommonFriendsInput.Err
 }

@@ -86,3 +86,46 @@ func TestCreateUser(t *testing.T) {
 		})
 	}
 }
+
+func TestEmailValidate(t *testing.T) {
+	tcs := []struct {
+		scenario  string
+		input     string
+		expResult bool
+	}{
+		{
+			scenario:  "success",
+			input:     "a@gmail.com",
+			expResult: true,
+		},
+		{
+			scenario:  "invalid",
+			input:     "a.com",
+			expResult: false,
+		},
+		{
+			scenario:  "invalid",
+			input:     "a.123@",
+			expResult: false,
+		},
+		{
+			scenario:  "invalid",
+			input:     "@123.example.gmail.com",
+			expResult: false,
+		},
+		{
+			scenario:  "invalid",
+			input:     "aXYZ@gmai.123",
+			expResult: false,
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.scenario, func(t *testing.T) {
+			mockEmailValidate := userCreateInput{
+				Email: tc.input,
+			}
+			rs := mockEmailValidate.validate()
+			assert.Equal(t, tc.expResult, rs)
+		})
+	}
+}

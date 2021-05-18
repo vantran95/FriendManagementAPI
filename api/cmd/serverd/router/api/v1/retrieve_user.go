@@ -17,19 +17,23 @@ type (
 
 	// userRetrieverService interface represents the retrieve service used to retrieve a user info
 	userRetrieverService interface {
-		GetAllUsers() (*[]models.User, error)
+		GetAllUsers() ([]models.User, error)
 	}
 )
 
 // GetAllUsers is endpoint to retrieve users list
 func (rsv RetrieveResolver) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	var resErr = response.Error{Status: http.StatusBadRequest}
+
 	users, err := rsv.UserService.GetAllUsers()
 	if err != nil {
-		response.ResponseJson(w, response.Error{Status: http.StatusBadRequest, Code: "get_all_users", Description: err.Error()})
+		resErr.Code = "get_all_users"
+		resErr.Description = err.Error()
+		response.ResponseJson(w, resErr)
 		return
 	}
 	var userEmails []string
-	for _, u := range *users {
+	for _, u := range users {
 		userEmails = append(userEmails, u.Email)
 	}
 

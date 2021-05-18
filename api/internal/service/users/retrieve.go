@@ -1,6 +1,9 @@
 package users
 
-import "github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
+import (
+	"errors"
+	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
+)
 
 // retrieveRepository interface represents the retrieve repository
 type retrieveRepository interface {
@@ -9,8 +12,15 @@ type retrieveRepository interface {
 }
 
 // GetAllUsers attempts to get all users
-func (s ServiceImpl) GetAllUsers() (*[]models.User, error) {
-	return s.RetrieveRepo.GetAllUsers()
+func (s ServiceImpl) GetAllUsers() ([]models.User, error) {
+	users, err := s.RetrieveRepo.GetAllUsers()
+	if err != nil {
+		return []models.User{}, err
+	}
+	if len(*users) == 0 {
+		return []models.User{}, errors.New("do not have users")
+	}
+	return *users, nil
 }
 
 // GetUser attempts to retrieve user info

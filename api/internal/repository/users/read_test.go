@@ -12,18 +12,16 @@ import (
 
 func TestRepositoryImpl_GetUser(t *testing.T) {
 	tcs := []struct {
-		scenario          string
-		input             string
-		mockGetUserOutput *models.User
-		mockErr           error
-		expResult         interface{}
-		expErr            error
+		scenario  string
+		input     string
+		mockErr   error
+		expResult *models.User
+		expErr    error
 	}{
 		{
-			scenario:          "success",
-			input:             "a@mail.com",
-			mockGetUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
-			expResult:         &models.User{ID: 1, Email: "a@gmail.com"},
+			scenario:  "success",
+			input:     "a@mail.com",
+			expResult: &models.User{ID: 1, Email: "a@gmail.com"},
 		},
 		{
 			scenario: "user does not exists",
@@ -42,17 +40,18 @@ func TestRepositoryImpl_GetUser(t *testing.T) {
 			}
 			defer dbTest.Close()
 			rows := sqlmock.NewRows([]string{"id", "email"})
-			if tc.mockGetUserOutput != nil {
-				rows.AddRow(tc.mockGetUserOutput.ID, tc.mockGetUserOutput.Email)
+			if tc.expResult != nil {
+				rows.AddRow(tc.expResult.ID, tc.expResult.Email)
 			}
 			query := regexp.QuoteMeta(`select id, email from users where email=$1`)
 			mock.ExpectQuery(query).WithArgs(tc.input).WillReturnRows(rows)
 
-			myDB := &RepositoryImpl{dbTest}
-			result, _ := myDB.GetUser(tc.input)
+			dbMock := &RepositoryImpl{dbTest}
+			result, err := dbMock.GetUser(tc.input)
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)
+				assert.NoError(t, tc.expErr, err)
 			}
 		})
 	}
@@ -60,24 +59,13 @@ func TestRepositoryImpl_GetUser(t *testing.T) {
 
 func TestRepositoryImpl_GetAllUsers(t *testing.T) {
 	tcs := []struct {
-		scenario             string
-		mockGetAllUserOutput *[]models.User
-		mockErr              error
-		expResult            interface{}
-		expErr               error
+		scenario  string
+		mockErr   error
+		expResult *[]models.User
+		expErr    error
 	}{
 		{
 			scenario: "success",
-			mockGetAllUserOutput: &[]models.User{
-				{
-					ID:    1,
-					Email: "a@gmail.com",
-				},
-				{
-					ID:    2,
-					Email: "b@gmail.com",
-				},
-			},
 			expResult: &[]models.User{
 				{
 					ID:    1,
@@ -90,10 +78,10 @@ func TestRepositoryImpl_GetAllUsers(t *testing.T) {
 			},
 		},
 		{
-			scenario: "do not have users",
-
-			mockErr: errors.New("do not have users"),
-			expErr:  errors.New("do not have users"),
+			scenario:  "do not have users",
+			expResult: &[]models.User{},
+			mockErr:   errors.New("do not have users"),
+			expErr:    errors.New("do not have users"),
 		},
 	}
 	for _, tc := range tcs {
@@ -105,19 +93,20 @@ func TestRepositoryImpl_GetAllUsers(t *testing.T) {
 			}
 			defer dbTest.Close()
 			rows := sqlmock.NewRows([]string{"id", "email"})
-			if tc.mockGetAllUserOutput != nil {
-				for _, v := range *tc.mockGetAllUserOutput {
+			if len(*tc.expResult) > 0 {
+				for _, v := range *tc.expResult {
 					rows.AddRow(v.ID, v.Email)
 				}
 			}
 			query := regexp.QuoteMeta(`select id, email from users`)
 			mock.ExpectQuery(query).WillReturnRows(rows)
 
-			myDB := &RepositoryImpl{dbTest}
-			result, _ := myDB.GetAllUsers()
+			dbMock := &RepositoryImpl{dbTest}
+			result, err := dbMock.GetAllUsers()
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)
+				assert.NoError(t, tc.expErr, err)
 			}
 		})
 	}

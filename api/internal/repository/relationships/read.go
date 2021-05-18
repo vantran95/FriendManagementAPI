@@ -8,34 +8,32 @@ import (
 )
 
 // GetRelationships attempts to retrieve a relationship through two email ids
-func (r RepositoryImpl) GetRelationships(fromID, toID int64) (*[]models.Relationship, error) {
-	stmt := `select x.id, x.first_email_id, x.second_email_id, x.status
+func (r RepositoryImpl) GetRelationships(requestID, targetID int64) (*[]models.Relationship, error) {
+	stmt := `select x.id, x.request_id, x.target_id, x.status
 			from relationships x
-			where x.first_email_id in (%s, %s)
-			and x.second_email_id in (%s, %s);
+			where x.request_id in (%s, %s)
+			and x.target_id in (%s, %s);
 			`
 	query := fmt.Sprintf(
 		stmt,
-		strconv.FormatInt(fromID, 10),
-		strconv.FormatInt(toID, 10),
-		strconv.FormatInt(fromID, 10),
-		strconv.FormatInt(toID, 10))
+		strconv.FormatInt(requestID, 10),
+		strconv.FormatInt(targetID, 10),
+		strconv.FormatInt(requestID, 10),
+		strconv.FormatInt(targetID, 10))
 
 	results, err := r.DB.Query(query)
 	if err != nil {
 		return nil, err
 	}
 
-	var relationships []models.Relationship
+	relationships := make([]models.Relationship, 0)
 	for results.Next() {
-		var id, firstEmailID, secondEmailID int64
+		var id, requestID, targetID int64
 		var status string
-		results.Scan(&id, &firstEmailID, &secondEmailID, &status)
-		relationship := models.Relationship{ID: id, FirstEmailID: firstEmailID, SecondEmailID: secondEmailID, Status: status}
-		relationships = append(relationships, relationship)
-	}
-	if len(relationships) == 0 {
-		return nil, nil
+		err = results.Scan(&id, &requestID, &targetID, &status)
+		if err == nil {
+			relationships = append(relationships, models.Relationship{ID: id, RequestID: requestID, TargetID: targetID, Status: status})
+		}
 	}
 	return &relationships, nil
 }
@@ -44,13 +42,13 @@ func (r RepositoryImpl) GetRelationships(fromID, toID int64) (*[]models.Relation
 func (r RepositoryImpl) GetFriendsList(emailID int64) (*[]models.User, error) {
 	qr := `select u.id, u.email
 			from users u
-         		join relationships r on r.second_email_id = u.id
-			where r.first_email_id = %s and r.status = 'FRIEND'
+         		join relationships r on r.target_id = u.id
+			where r.request_id = %s and r.status = 'FRIEND'
 			union
 			select u.id, u.email
 			from users u
-         		join relationships r on r.first_email_id = u.id
-			where r.second_email_id = %s and r.status = 'FRIEND';
+         		join relationships r on r.request_id = u.id
+			where r.target_id = %s and r.status = 'FRIEND';
 			`
 	query := fmt.Sprintf(
 		qr,
@@ -58,23 +56,18 @@ func (r RepositoryImpl) GetFriendsList(emailID int64) (*[]models.User, error) {
 		strconv.FormatInt(emailID, 10))
 
 	results, err := r.DB.Query(query)
-
 	if err != nil {
 		return nil, err
 	}
 
-	var users []models.User
+	users := make([]models.User, 0)
 	for results.Next() {
 		var id int64
 		var email string
-		results.Scan(&id, &email)
-		user := models.User{ID: id, Email: email}
-		users = append(users, user)
+		err = results.Scan(&id, &email)
+		if err == nil {
+			users = append(users, models.User{ID: id, Email: email})
+		}
 	}
-
-	if len(users) == 0 {
-		return nil, nil
-	}
-
 	return &users, nil
 }

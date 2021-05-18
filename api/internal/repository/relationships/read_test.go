@@ -14,37 +14,35 @@ import (
 
 func TestRepositoryImpl_GetRelationships(t *testing.T) {
 	tcs := []struct {
-		scenario         string
-		fromID           int64
-		toID             int64
-		mockGetRelOutput *[]models.Relationship
-		mockErr          error
-		expResult        interface{}
-		expErr           error
+		scenario  string
+		requestID int64
+		targetID  int64
+		mockErr   error
+		expResult *[]models.Relationship
+		expErr    error
 	}{
 		{
-			scenario: "success",
-			fromID:   int64(1),
-			toID:     int64(2),
+			scenario:  "success",
+			requestID: int64(1),
+			targetID:  int64(2),
 			expResult: &[]models.Relationship{
 				{
-					ID:            1,
-					FirstEmailID:  1,
-					SecondEmailID: 2,
-					Status:        "FRIEND",
+					ID:        1,
+					RequestID: 1,
+					TargetID:  2,
+					Status:    "FRIEND",
 				},
 			},
 		},
 		{
-			scenario:         "no relationship",
-			fromID:           int64(1),
-			toID:             int64(2),
-			mockGetRelOutput: nil,
-			expResult:        nil,
+			scenario:  "no relationship",
+			requestID: int64(1),
+			targetID:  int64(2),
+			expResult: &[]models.Relationship{},
 		},
 		{
 			scenario: "invalid data input",
-			toID:     int64(2),
+			targetID: int64(2),
 			mockErr:  errors.New("invalid data input"),
 			expErr:   errors.New("invalid data input"),
 		},
@@ -56,39 +54,37 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
 			defer dbTest.Close()
-			rows := sqlmock.NewRows([]string{"id", "first_email_id", "second_email_id", "status"})
-			if tc.mockGetRelOutput != nil && tc.fromID != 0 {
-				rows.AddRow(1, tc.fromID, tc.toID, "FRIEND")
-			}
 
-			stmt := `select x.id, x.first_email_id, x.second_email_id, x.status
+			stmt := `select x.id, x.request_id, x.target_id, x.status
 			from relationships x
-			where x.first_email_id in (%s, %s)
-			and x.second_email_id in (%s, %s);
+			where x.request_id in (%s, %s)
+			and x.target_id in (%s, %s);
 			`
 			query := fmt.Sprintf(
 				stmt,
-				strconv.FormatInt(tc.fromID, 10),
-				strconv.FormatInt(tc.toID, 10),
-				strconv.FormatInt(tc.fromID, 10),
-				strconv.FormatInt(tc.toID, 10))
+				strconv.FormatInt(tc.requestID, 10),
+				strconv.FormatInt(tc.targetID, 10),
+				strconv.FormatInt(tc.requestID, 10),
+				strconv.FormatInt(tc.targetID, 10))
 
-			if tc.fromID == 0 {
+			if tc.requestID <= 0 {
 				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnError(errors.New("invalid data input"))
 			} else {
+				rows := sqlmock.NewRows([]string{"id", "request_id", "target_id", "status"})
+				if len(*tc.expResult) > 0 {
+					rows.AddRow(1, tc.requestID, tc.targetID, "FRIEND")
+				}
 				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
 			}
 
-			myDB := &RepositoryImpl{dbTest}
-			result, err := myDB.GetRelationships(tc.fromID, tc.toID)
+			dbMock := &RepositoryImpl{dbTest}
+			result, err := dbMock.GetRelationships(tc.requestID, tc.targetID)
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
-				if tc.mockGetRelOutput == nil {
-					assert.Nil(t, result)
-				} else {
-					assert.Equal(t, tc.expResult, result)
-					assert.NoError(t, err)
-				}
+				assert.Equal(t, tc.expResult, result)
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}
@@ -96,22 +92,15 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 
 func TestRepositoryImpl_GetFriendsList(t *testing.T) {
 	tcs := []struct {
-		scenario                 string
-		emailID                  int64
-		mockGetFriendsListOutput *[]models.User
-		mockErr                  error
-		expResult                interface{}
-		expErr                   error
+		scenario  string
+		emailID   int64
+		mockErr   error
+		expResult *[]models.User
+		expErr    error
 	}{
 		{
 			scenario: "success",
 			emailID:  int64(1),
-			mockGetFriendsListOutput: &[]models.User{
-				{
-					ID:    1,
-					Email: "a@gmail.com",
-				},
-			},
 			expResult: &[]models.User{
 				{
 					ID:    1,
@@ -120,10 +109,9 @@ func TestRepositoryImpl_GetFriendsList(t *testing.T) {
 			},
 		},
 		{
-			scenario:                 "do not have friends list",
-			emailID:                  int64(1),
-			mockGetFriendsListOutput: nil,
-			expResult:                nil,
+			scenario:  "do not have friends list",
+			emailID:   int64(1),
+			expResult: &[]models.User{},
 		},
 		{
 			scenario: "invalid data input",
@@ -138,43 +126,41 @@ func TestRepositoryImpl_GetFriendsList(t *testing.T) {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
 			defer dbTest.Close()
-			rows := sqlmock.NewRows([]string{"id", "email"})
-			if tc.mockGetFriendsListOutput != nil {
-				for _, v := range *tc.mockGetFriendsListOutput {
-					rows.AddRow(v.ID, v.Email)
-				}
-			}
 
 			stmt := `select u.id, u.email
 			from users u
-        		join relationships r on r.second_email_id = u.id
-			where r.first_email_id = %s and r.status = 'FRIEND'
+        		join relationships r on r.target_id = u.id
+			where r.request_id = %s and r.status = 'FRIEND'
 			union
 			select u.id, u.email
 			from users u
-        		join relationships r on r.first_email_id = u.id
-			where r.second_email_id = %s and r.status = 'FRIEND';
+        		join relationships r on r.request_id = u.id
+			where r.target_id = %s and r.status = 'FRIEND';
 			`
 			query := fmt.Sprintf(
 				stmt,
 				strconv.FormatInt(tc.emailID, 10),
 				strconv.FormatInt(tc.emailID, 10))
-			if tc.emailID == 0 {
+			if tc.emailID <= 0 {
 				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnError(errors.New("invalid data input"))
 			} else {
+				rows := sqlmock.NewRows([]string{"id", "email"})
+				if len(*tc.expResult) > 0 {
+					for _, v := range *tc.expResult {
+						rows.AddRow(v.ID, v.Email)
+					}
+				}
 				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
 			}
 
-			myDB := &RepositoryImpl{dbTest}
-			result, err := myDB.GetFriendsList(tc.emailID)
+			dbMock := &RepositoryImpl{dbTest}
+			result, err := dbMock.GetFriendsList(tc.emailID)
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
-				if tc.mockGetFriendsListOutput == nil {
-					assert.Nil(t, result)
-				} else {
-					assert.Equal(t, tc.expResult, result)
-					assert.NoError(t, err)
-				}
+				assert.Equal(t, tc.expResult, result)
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}

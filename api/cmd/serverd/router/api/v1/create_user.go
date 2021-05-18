@@ -24,39 +24,39 @@ type (
 func (rsv CreateResolver) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var input userCreateInput
 
+	var resErr = response.Error{Status: http.StatusBadRequest}
+
 	err := json.NewDecoder(r.Body).Decode(&input)
 
 	if err != nil {
-		response.ResponseJson(w, response.Error{Status: http.StatusBadRequest, Code: "invalid_request_body", Description: "Invalid request body"})
+		resErr.Code = "invalid_request_body"
+		resErr.Description = "Invalid request body"
+		response.ResponseJson(w, resErr)
 		return
 	}
 
-	email := input.Email
-	// Validate email format
-	if !isValidEmail(email) {
-		response.ResponseJson(w, response.Error{Status: http.StatusBadRequest, Code: "invalid_request_email", Description: "Invalid email format"})
+	if !input.validate() {
+		resErr.Code = "invalid_request_email"
+		resErr.Description = "Invalid email format"
+		response.ResponseJson(w, resErr)
 		return
 	}
 
-	result, error := rsv.UserService.CreateUser(email)
-	if error != nil {
-		response.ResponseJson(w, response.Error{Status: http.StatusBadRequest, Code: "create_user", Description: error.Error()})
+	_, err = rsv.UserService.CreateUser(input.Email)
+	if err != nil {
+		resErr.Code = "create_user"
+		resErr.Description = err.Error()
+		response.ResponseJson(w, resErr)
 		return
 	}
 
-	response.ResponseJson(w, response.Result{Success: result})
+	response.ResponseJson(w, response.Result{Success: true})
 }
 
-// isValidEmail attempts to check email is valid
-func isValidEmail(email string) bool {
+// validate attempts to check email is valid
+func (u userCreateInput) validate() bool {
 	const emailRegex = "[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})"
 	re, _ := regexp.Compile(emailRegex)
 
-	if len(email) < 3 && len(email) > 254 {
-		return false
-	}
-	if !re.MatchString(email) {
-		return false
-	}
-	return true
+	return re.MatchString(u.Email)
 }

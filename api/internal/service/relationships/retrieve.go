@@ -1,20 +1,21 @@
 package relationships
 
 import (
+	"database/sql"
 	"errors"
 
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 )
 
 type (
-	// userRetriever interface represents the user retriever
+	// userRetriever interface represents the retriever from user repository
 	userRetriever interface {
 		GetUser(email string) (*models.User, error)
 	}
 
-	// retrieveRepository interface represents the retrieve repository
+	// retrieveRepository interface represents the retrieve from relationship repository
 	retrieveRepository interface {
-		GetRelationships(fromID, toID int64) (*[]models.Relationship, error)
+		GetRelationships(requestID, targetID int64) (*[]models.Relationship, error)
 		GetFriendsList(emailID int64) (*[]models.User, error)
 	}
 )
@@ -24,25 +25,28 @@ func (s ServiceImpl) GetFriendsList(email string) ([]string, error) {
 	var emails []string
 
 	// Check email already created
-	getUser, err := s.UserRetriever.GetUser(email)
+	user, err := s.UserRetriever.GetUser(email)
 
 	if err != nil {
-		return []string{}, err
-	}
-
-	if getUser == nil {
-		return []string{}, errors.New("user does not exist")
+		switch {
+		case err == sql.ErrNoRows:
+			return []string{}, errors.New("user does not exists")
+		case err != nil:
+			return []string{}, err
+		}
 	}
 
 	// Get list friend
-	getFriendsList, err := s.RetrieveRepo.GetFriendsList(getUser.ID)
+	friendsList, err := s.RetrieveRepo.GetFriendsList(user.ID)
 	if err != nil {
 		return []string{}, err
 	}
-	if getFriendsList == nil {
+
+	// check length
+	if len(*friendsList) == 0 {
 		return []string{}, errors.New("user does not have friend")
 	}
-	for _, f := range *getFriendsList {
+	for _, f := range *friendsList {
 		friendEmail := f.Email
 		emails = append(emails, friendEmail)
 	}
@@ -50,20 +54,20 @@ func (s ServiceImpl) GetFriendsList(email string) ([]string, error) {
 }
 
 // GetCommonFriends attempts to retrieve a list of common friends
-func (s ServiceImpl) GetCommonFriends(firstEmail, secondEmail string) ([]string, error) {
+func (s ServiceImpl) GetCommonFriends(requestEmail, targetEmail string) ([]string, error) {
 	var commonEmails []string
 
-	firstFriendsList, err := s.GetFriendsList(firstEmail)
+	requestFriendsList, err := s.GetFriendsList(requestEmail)
 	if err != nil {
 		return []string{}, err
 	}
-	secondFriendsList, err := s.GetFriendsList(secondEmail)
+	targetFriendsList, err := s.GetFriendsList(targetEmail)
 	if err != nil {
 		return []string{}, err
 	}
 
-	for _, v := range firstFriendsList {
-		for _, item := range secondFriendsList {
+	for _, v := range requestFriendsList {
+		for _, item := range targetFriendsList {
 			if item == v {
 				commonEmails = append(commonEmails, v)
 			}
@@ -71,13 +75,13 @@ func (s ServiceImpl) GetCommonFriends(firstEmail, secondEmail string) ([]string,
 	}
 
 	if len(commonEmails) == 0 {
-		return nil, errors.New("do not have common friends between two emails")
+		return []string{}, errors.New("do not have common friends between two emails")
 	}
 
 	return commonEmails, nil
 }
 
 // getRelationships get relationship between two emails.
-func getRelationships(repo retrieveRepository, fromID, toID int64) (*[]models.Relationship, error) {
-	return repo.GetRelationships(fromID, toID)
+func getRelationships(repo retrieveRepository, requestID, targetID int64) (*[]models.Relationship, error) {
+	return repo.GetRelationships(requestID, targetID)
 }

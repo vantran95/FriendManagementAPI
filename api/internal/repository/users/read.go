@@ -1,10 +1,6 @@
 package users
 
 import (
-	"database/sql"
-	"errors"
-	"log"
-
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
 )
 
@@ -15,20 +11,16 @@ func (r RepositoryImpl) GetAllUsers() (*[]models.User, error) {
 		return nil, err
 	}
 
-	var users []models.User
+	users := make([]models.User, 0)
 
 	for result.Next() {
 		var id int64
 		var email string
-		if err := result.Scan(&id, &email); err != nil {
-			log.Fatal(err)
+
+		err = result.Scan(&id, &email)
+		if err == nil {
+			users = append(users, models.User{ID: id, Email: email})
 		}
-		user := models.User{ID: id, Email: email}
-		users = append(users, user)
-	}
-	// Check for no results
-	if len(users) == 0 {
-		return nil, errors.New("do not have users")
 	}
 	return &users, nil
 }
@@ -39,13 +31,9 @@ func (r RepositoryImpl) GetUser(email string) (*models.User, error) {
 	var userEmail string
 	err := r.DB.QueryRow("select id, email from users where email=$1", email).Scan(&id, &userEmail)
 
-	switch {
-	case err == sql.ErrNoRows:
-		return nil, errors.New("user does not exists")
-	case err != nil:
+	if err != nil {
 		return nil, err
-	default:
-		user := models.User{ID: id, Email: userEmail}
-		return &user, nil
 	}
+
+	return &models.User{ID: id, Email: userEmail}, nil
 }

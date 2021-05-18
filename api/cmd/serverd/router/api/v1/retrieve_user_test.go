@@ -2,6 +2,8 @@ package v1
 
 import (
 	"encoding/json"
+	"errors"
+	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/response"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,7 +17,8 @@ func TestGetAllUsers(t *testing.T) {
 		scenario          string
 		mockServiceOutput []models.User
 		mockServiceErr    error
-		expResult         userResponse
+		expResult         interface{}
+		expCode           int
 	}{
 		{
 			scenario: "success",
@@ -34,6 +37,17 @@ func TestGetAllUsers(t *testing.T) {
 				Count:   2,
 				Users:   []string{"a@gmail.com", "b@gmail.com"},
 			},
+			expCode: http.StatusOK,
+		},
+		{
+			scenario:       "do not have users",
+			mockServiceErr: errors.New("do not have users"),
+			expResult: response.Error{
+				Status:      400,
+				Code:        "get_all_users",
+				Description: "do not have users",
+			},
+			expCode: http.StatusBadRequest,
 		},
 	}
 
@@ -50,9 +64,9 @@ func TestGetAllUsers(t *testing.T) {
 				UserService: mockUserRetrieverService{
 					TestF: t,
 					GetAllUsersInput: struct {
-						Output *[]models.User
+						Output []models.User
 						Err    error
-					}{Output: &tc.mockServiceOutput, Err: tc.mockServiceErr},
+					}{Output: tc.mockServiceOutput, Err: tc.mockServiceErr},
 				},
 			}
 
@@ -62,7 +76,7 @@ func TestGetAllUsers(t *testing.T) {
 			byteResult, _ := json.Marshal(tc.expResult)
 
 			assert.Equal(t, string(byteResult), rr.Body.String())
-			assert.Equal(t, http.StatusOK, rr.Code)
+			assert.Equal(t, tc.expCode, rr.Code)
 		})
 	}
 }

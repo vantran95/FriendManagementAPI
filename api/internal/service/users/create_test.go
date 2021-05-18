@@ -1,6 +1,7 @@
 package users
 
 import (
+	"database/sql"
 	"errors"
 	"testing"
 
@@ -14,6 +15,7 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 		input                string
 		mockGetUserOutput    *models.User
 		mockCreateUserOutput bool
+		mockGetUserErr       error
 		mockErr              error
 		expResult            bool
 		expErr               error
@@ -21,7 +23,8 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 		{
 			scenario:             "success",
 			input:                "a@mail.com",
-			mockGetUserOutput:    nil,
+			mockGetUserOutput:    &models.User{},
+			mockGetUserErr:       sql.ErrNoRows,
 			mockCreateUserOutput: true,
 			expResult:            true,
 		},
@@ -42,7 +45,7 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 					Input  string
 					Output *models.User
 					Err    error
-				}{Input: tc.input, Output: tc.mockGetUserOutput, Err: tc.mockErr},
+				}{Input: tc.input, Output: tc.mockGetUserOutput, Err: tc.mockGetUserErr},
 				CreateUserInput: struct {
 					Input  string
 					Output bool
@@ -59,7 +62,7 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
-				assert.NoError(t, err)
+				assert.NoError(t, tc.mockErr, err)
 			}
 		})
 	}
