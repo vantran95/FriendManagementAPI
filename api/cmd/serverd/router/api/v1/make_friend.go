@@ -22,11 +22,13 @@ type (
 // MakeFriend is endpoint to make friend connection between 2 emails addresses.
 func (rsv CreateResolver) MakeFriend(w http.ResponseWriter, r *http.Request) {
 	var input createFriendInput
-	var resErr = response.Error{Status: http.StatusBadRequest}
+	var resErr = response.Error{Status: http.StatusBadRequest, Code: "invalid_request_body", Description: "Invalid request body"}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		resErr.Code = "invalid_request_body"
-		resErr.Description = "Invalid request body"
+		response.ResponseJson(w, resErr)
+		return
+	}
+	if len(input.Friends) < 2 {
 		response.ResponseJson(w, resErr)
 		return
 	}
@@ -40,6 +42,5 @@ func (rsv CreateResolver) MakeFriend(w http.ResponseWriter, r *http.Request) {
 		response.ResponseJson(w, resErr)
 		return
 	}
-
 	response.ResponseJson(w, response.Result{Success: result})
 }

@@ -14,7 +14,7 @@ type createRepository interface {
 
 // MakeFriend attempts to create a friend relationship between two emails.
 func (s ServiceImpl) MakeFriend(requestEmail, targetEmail string) (bool, error) {
-	requestUser, err := s.UserRetriever.GetUser(requestEmail)
+	requestUser, err := s.UserRetrieverRepo.GetUser(requestEmail)
 	if err != nil {
 		switch {
 		case err == sql.ErrNoRows:
@@ -23,8 +23,7 @@ func (s ServiceImpl) MakeFriend(requestEmail, targetEmail string) (bool, error) 
 			return false, err
 		}
 	}
-
-	targetUser, err := s.UserRetriever.GetUser(targetEmail)
+	targetUser, err := s.UserRetrieverRepo.GetUser(targetEmail)
 	if err != nil {
 		switch {
 		case err == sql.ErrNoRows:
@@ -33,13 +32,11 @@ func (s ServiceImpl) MakeFriend(requestEmail, targetEmail string) (bool, error) 
 			return false, err
 		}
 	}
-
 	// Get relationship and check friend
 	rs, err := getRelationships(s.RetrieveRepo, requestUser.ID, targetUser.ID)
 	if err != nil {
 		return false, err
 	}
-
 	for _, item := range *rs {
 		switch item.Status {
 		case RelationshipTypeFriend:
@@ -48,8 +45,6 @@ func (s ServiceImpl) MakeFriend(requestEmail, targetEmail string) (bool, error) 
 			return false, errors.New("you were blocked")
 		}
 	}
-
 	relationship := models.Relationship{RequestID: requestUser.ID, TargetID: targetUser.ID, Status: RelationshipTypeFriend}
-
 	return s.CreateRepo.CreateRelationship(relationship)
 }

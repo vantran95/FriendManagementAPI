@@ -23,14 +23,9 @@ type (
 // CreateUser retrieve a API to create user.
 func (rsv CreateResolver) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var input userCreateInput
-
-	var resErr = response.Error{Status: http.StatusBadRequest}
-
+	var resErr = response.Error{Status: http.StatusBadRequest, Code: "invalid_request_body", Description: "Invalid request body"}
 	err := json.NewDecoder(r.Body).Decode(&input)
-
 	if err != nil {
-		resErr.Code = "invalid_request_body"
-		resErr.Description = "Invalid request body"
 		response.ResponseJson(w, resErr)
 		return
 	}
@@ -57,6 +52,5 @@ func (rsv CreateResolver) CreateUser(w http.ResponseWriter, r *http.Request) {
 func (u userCreateInput) validate() bool {
 	const emailRegex = "[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})"
 	re, _ := regexp.Compile(emailRegex)
-
 	return re.MatchString(u.Email)
 }

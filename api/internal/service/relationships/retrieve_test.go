@@ -20,9 +20,8 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 		expErr                   error
 	}{
 		{
-			scenario: "success",
-			input:    "a@gmail.com",
-
+			scenario:          "success",
+			input:             "a@gmail.com",
 			mockGetUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
 			mockGetFriendsListOutput: &[]models.User{
 				{
@@ -35,21 +34,18 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 				},
 			},
 			mockServiceOutput: []string{"b@gmail.com", "c@gmail.com"},
-
-			expResult: []string{"b@gmail.com", "c@gmail.com"},
+			expResult:         []string{"b@gmail.com", "c@gmail.com"},
 		},
 		{
-			scenario: "user does not exists",
-			input:    "a@gmail.com",
-
+			scenario:          "user does not exists",
+			input:             "a@gmail.com",
 			mockGetUserOutput: &models.User{},
 			mockErr:           errors.New("user does not exists"),
 			expErr:            errors.New("user does not exists"),
 		},
 		{
-			scenario: "user does not have friend",
-			input:    "a@gmail.com",
-
+			scenario:                 "user does not have friend",
+			input:                    "a@gmail.com",
 			mockGetFriendsListOutput: &[]models.User{},
 			mockErr:                  errors.New("user does not have friend"),
 			expErr:                   errors.New("user does not have friend"),
@@ -71,7 +67,7 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 					Err    error
 				}{{Input: 1, Output: tc.mockGetFriendsListOutput, Err: tc.mockErr}}},
 			}
-			mockUserServiceRetriever := mockUserServiceRetriever{
+			mockUserRetrieverRepo := mockUserRetrieverRepo{
 				TestF: t,
 				GetUserInput: struct {
 					Group []struct {
@@ -85,18 +81,16 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 					Err    error
 				}{{Input: tc.input, Output: tc.mockGetUserOutput, Err: tc.mockErr}}},
 			}
-
 			service := ServiceImpl{
-				RetrieveRepo:  mockRepo,
-				UserRetriever: mockUserServiceRetriever,
+				RetrieveRepo:      mockRepo,
+				UserRetrieverRepo: mockUserRetrieverRepo,
 			}
-
 			rs, err := service.GetFriendsList(tc.input)
-
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
 				assert.NoError(t, tc.expErr, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}
@@ -104,21 +98,17 @@ func TestServiceImpl_GetFriendsList(t *testing.T) {
 
 func TestServiceImpl_GetCommonFriends(t *testing.T) {
 	tcs := []struct {
-		scenario     string
-		requestInput string
-		targetInput  string
-
-		mockGetRequestUserOutput *models.User
-		mockGetTargetUserOutput  *models.User
-
+		scenario                        string
+		requestInput                    string
+		targetInput                     string
+		mockGetRequestUserOutput        *models.User
+		mockGetTargetUserOutput         *models.User
 		mockGetRequestFriendsListOutput *[]models.User
 		mockGetTargetFriendsListOutput  *[]models.User
-
-		mockServiceOutput []string
-
-		mockErr   error
-		expResult []string
-		expErr    error
+		mockServiceOutput               []string
+		mockErr                         error
+		expResult                       []string
+		expErr                          error
 	}{
 		{
 			scenario:                 "success",
@@ -126,7 +116,6 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 			targetInput:              "b@gmail.com",
 			mockGetRequestUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
 			mockGetTargetUserOutput:  &models.User{ID: 2, Email: "b@gmail.com"},
-
 			mockGetRequestFriendsListOutput: &[]models.User{
 				{
 					ID:    3,
@@ -137,36 +126,30 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 					Email: "d@gmail.com",
 				},
 			},
-
 			mockGetTargetFriendsListOutput: &[]models.User{
 				{
 					ID:    3,
 					Email: "c@gmail.com",
 				},
 			},
-
 			mockServiceOutput: []string{"c@gmail.com"},
-
-			expResult: []string{"c@gmail.com"},
+			expResult:         []string{"c@gmail.com"},
 		},
 		{
-			scenario:     "user does not exists",
-			requestInput: "a@gmail.com",
-			targetInput:  "b@gmail.com",
-
+			scenario:                 "user does not exists",
+			requestInput:             "a@gmail.com",
+			targetInput:              "b@gmail.com",
 			mockGetRequestUserOutput: &models.User{},
 			mockGetTargetUserOutput:  &models.User{ID: 2, Email: "b@gmail.com"},
 			mockErr:                  errors.New("user does not exists"),
 			expErr:                   errors.New("user does not exists"),
 		},
 		{
-			scenario:     "do not have common friend",
-			requestInput: "a@gmail.com",
-			targetInput:  "b@gmail.com",
-
+			scenario:                 "do not have common friend",
+			requestInput:             "a@gmail.com",
+			targetInput:              "b@gmail.com",
 			mockGetRequestUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
 			mockGetTargetUserOutput:  &models.User{ID: 2, Email: "b@gmail.com"},
-
 			mockGetRequestFriendsListOutput: &[]models.User{
 				{
 					ID:    4,
@@ -179,20 +162,16 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 					Email: "c@gmail.com",
 				},
 			},
-
 			mockErr: errors.New("do not have common friends between two emails"),
 			expErr:  errors.New("do not have common friends between two emails"),
 		},
 		{
-			scenario: "user does not have friend",
-
-			requestInput:             "a@gmail.com",
-			targetInput:              "b@gmail.com",
-			mockGetRequestUserOutput: &models.User{ID: 1, Email: "a@gmail.com"},
-			mockGetTargetUserOutput:  &models.User{ID: 2, Email: "b@gmail.com"},
-
+			scenario:                        "user does not have friend",
+			requestInput:                    "a@gmail.com",
+			targetInput:                     "b@gmail.com",
+			mockGetRequestUserOutput:        &models.User{ID: 1, Email: "a@gmail.com"},
+			mockGetTargetUserOutput:         &models.User{ID: 2, Email: "b@gmail.com"},
 			mockGetRequestFriendsListOutput: &[]models.User{},
-
 			mockGetTargetFriendsListOutput: &[]models.User{
 				{
 					ID:    3,
@@ -232,7 +211,7 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 					},
 				},
 			}
-			mockUserServiceRetriever := mockUserServiceRetriever{
+			mockUserRetrieverRepo := mockUserRetrieverRepo{
 				TestF: t,
 				GetUserInput: struct {
 					Group []struct {
@@ -258,18 +237,16 @@ func TestServiceImpl_GetCommonFriends(t *testing.T) {
 						},
 					},
 				}}
-
 			service := ServiceImpl{
-				RetrieveRepo:  mockRepo,
-				UserRetriever: mockUserServiceRetriever,
+				RetrieveRepo:      mockRepo,
+				UserRetrieverRepo: mockUserRetrieverRepo,
 			}
-
 			rs, err := service.GetCommonFriends(tc.requestInput, tc.targetInput)
-
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
 				assert.NoError(t, tc.expErr, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}

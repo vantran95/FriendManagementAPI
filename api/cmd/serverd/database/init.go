@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"os"
 )
 
@@ -17,17 +18,19 @@ type Database struct {
 
 // Initialize attempts to init a database
 func Initialize() (Database, error) {
-	dbType := os.Getenv("DB_TYPE")
+	dbType, err := GetEnv("DB_TYPE")
+	if err != nil {
+		return Database{}, err
+	}
 
 	conn, err := initDB(dbType)
 	if err != nil {
 		return Database{}, err
 	}
-
 	db := Database{Conn: conn}
 	err = db.Conn.Ping()
 	if err != nil {
-		return db, err
+		return Database{}, err
 	}
 
 	return db, nil
@@ -41,4 +44,11 @@ func initDB(dbType string) (*sql.DB, error) {
 	default:
 		return nil, errors.New("cannot init db")
 	}
+}
+
+func GetEnv(key string) (string, error) {
+	if value, ok := os.LookupEnv(key); ok {
+		return value, nil
+	}
+	return "", fmt.Errorf("%s cannot load", key)
 }

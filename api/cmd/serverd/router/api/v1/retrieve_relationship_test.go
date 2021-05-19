@@ -19,7 +19,8 @@ func TestGetFriendsList(t *testing.T) {
 		mockServiceInput  string
 		mockServiceOutput []string
 		mockServiceErr    error
-		expResult         interface{}
+		expResult         friendsResponse
+		expErr            response.Error
 		expCode           int
 	}{
 		{
@@ -39,8 +40,8 @@ func TestGetFriendsList(t *testing.T) {
 			},
 			mockServiceInput: "a@gmail.com",
 			mockServiceErr:   errors.New("user does not exists"),
-			expResult: response.Error{
-				Status:      400,
+			expErr: response.Error{
+				Status:      http.StatusBadRequest,
 				Code:        "get_friend_list",
 				Description: "user does not exists",
 			},
@@ -54,8 +55,8 @@ func TestGetFriendsList(t *testing.T) {
 			mockServiceInput:  "a@gmail.com",
 			mockServiceOutput: []string{},
 			mockServiceErr:    errors.New("user does not have friend"),
-			expResult: response.Error{
-				Status:      400,
+			expErr: response.Error{
+				Status:      http.StatusBadRequest,
 				Code:        "get_friend_list",
 				Description: "user does not have friend",
 			},
@@ -70,7 +71,6 @@ func TestGetFriendsList(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-
 			// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
 			rr := httptest.NewRecorder()
 			mockResolver := RetrieveResolver{
@@ -83,12 +83,15 @@ func TestGetFriendsList(t *testing.T) {
 					}{Input: tc.mockServiceInput, Output: tc.mockServiceOutput, Err: tc.mockServiceErr},
 				},
 			}
-
 			handler := http.HandlerFunc(mockResolver.GetFriendsList)
 			handler.ServeHTTP(rr, req)
-
-			byteResult, _ := json.Marshal(tc.expResult)
-			assert.Equal(t, string(byteResult), rr.Body.String())
+			var byteRs []byte
+			if tc.expErr.Code != "" {
+				byteRs, _ = json.Marshal(tc.expErr)
+			} else {
+				byteRs, _ = json.Marshal(tc.expResult)
+			}
+			assert.Equal(t, string(byteRs), rr.Body.String())
 			assert.Equal(t, tc.expCode, rr.Code)
 		})
 	}
@@ -102,7 +105,8 @@ func TestGetCommonFriends(t *testing.T) {
 		mockServiceTargetInput  string
 		mockServiceOutput       []string
 		mockServiceErr          error
-		expResult               interface{}
+		expResult               friendsResponse
+		expErr                  response.Error
 		expCode                 int
 	}{
 		{
@@ -124,8 +128,8 @@ func TestGetCommonFriends(t *testing.T) {
 			mockServiceRequestInput: "aaaa@gmail.com",
 			mockServiceTargetInput:  "b@gmail.com",
 			mockServiceErr:          errors.New("user does not exists"),
-			expResult: response.Error{
-				Status:      400,
+			expErr: response.Error{
+				Status:      http.StatusBadRequest,
 				Code:        "get_common_friends",
 				Description: "user does not exists",
 			},
@@ -140,10 +144,22 @@ func TestGetCommonFriends(t *testing.T) {
 			mockServiceTargetInput:  "b@gmail.com",
 			mockServiceOutput:       []string{},
 			mockServiceErr:          errors.New("do not have common friends between two emails"),
-			expResult: response.Error{
-				Status:      400,
+			expErr: response.Error{
+				Status:      http.StatusBadRequest,
 				Code:        "get_common_friends",
 				Description: "do not have common friends between two emails",
+			},
+			expCode: http.StatusBadRequest,
+		},
+		{
+			scenario: "Invalid request body",
+			mockAPIInput: commonFriendsInput{
+				Friends: []string{"a@gmail.com"},
+			},
+			expErr: response.Error{
+				Status:      http.StatusBadRequest,
+				Code:        "invalid_request_body",
+				Description: "Invalid request body",
 			},
 			expCode: http.StatusBadRequest,
 		},
@@ -156,7 +172,6 @@ func TestGetCommonFriends(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-
 			// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
 			rr := httptest.NewRecorder()
 			mockResolver := RetrieveResolver{
@@ -170,12 +185,15 @@ func TestGetCommonFriends(t *testing.T) {
 					}{RequestInput: tc.mockServiceRequestInput, TargetInput: tc.mockServiceTargetInput, Output: tc.mockServiceOutput, Err: tc.mockServiceErr},
 				},
 			}
-
 			handler := http.HandlerFunc(mockResolver.GetCommonFriends)
 			handler.ServeHTTP(rr, req)
-
-			byteResult, _ := json.Marshal(tc.expResult)
-			assert.Equal(t, string(byteResult), rr.Body.String())
+			var byteRs []byte
+			if tc.expErr.Code != "" {
+				byteRs, _ = json.Marshal(tc.expErr)
+			} else {
+				byteRs, _ = json.Marshal(tc.expResult)
+			}
+			assert.Equal(t, string(byteRs), rr.Body.String())
 			assert.Equal(t, tc.expCode, rr.Code)
 		})
 	}

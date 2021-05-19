@@ -48,10 +48,11 @@ func TestRepositoryImpl_GetUser(t *testing.T) {
 
 			dbMock := &RepositoryImpl{dbTest}
 			result, err := dbMock.GetUser(tc.input)
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)
 				assert.NoError(t, tc.expErr, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}
@@ -86,7 +87,6 @@ func TestRepositoryImpl_GetAllUsers(t *testing.T) {
 	}
 	for _, tc := range tcs {
 		t.Run(tc.scenario, func(t *testing.T) {
-
 			dbTest, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -100,13 +100,13 @@ func TestRepositoryImpl_GetAllUsers(t *testing.T) {
 			}
 			query := regexp.QuoteMeta(`select id, email from users`)
 			mock.ExpectQuery(query).WillReturnRows(rows)
-
 			dbMock := &RepositoryImpl{dbTest}
 			result, err := dbMock.GetAllUsers()
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)
 				assert.NoError(t, tc.expErr, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}

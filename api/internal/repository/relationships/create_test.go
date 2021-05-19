@@ -33,13 +33,11 @@ func TestRepositoryImpl_CreateRelationship(t *testing.T) {
 	}
 	for _, tc := range tcs {
 		t.Run(tc.scenario, func(t *testing.T) {
-
 			dbTest, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
 			defer dbTest.Close()
-
 			query := regexp.QuoteMeta(`insert into relationships (request_id, target_id, status) values ($1, $2, $3);`)
 			if tc.expResult == true {
 				mock.ExpectPrepare(query).
@@ -55,10 +53,11 @@ func TestRepositoryImpl_CreateRelationship(t *testing.T) {
 
 			dbMock := &RepositoryImpl{dbTest}
 			result, err := dbMock.CreateRelationship(tc.input)
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)
-				assert.NoError(t, err)
+				assert.NoError(t, tc.expErr, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}

@@ -19,7 +19,8 @@ func TestCreateUser(t *testing.T) {
 		mockServiceInput  string
 		mockServiceOutput bool
 		mockServiceErr    error
-		expResult         interface{}
+		expResult         response.Result
+		expErr            response.Error
 		expCode           int
 	}{
 		{
@@ -40,8 +41,8 @@ func TestCreateUser(t *testing.T) {
 				Email: "invalid", // invalid email
 			},
 
-			expResult: response.Error{Status: http.StatusBadRequest, Code: "invalid_request_email", Description: "Invalid email format"},
-			expCode:   http.StatusBadRequest,
+			expErr:  response.Error{Status: http.StatusBadRequest, Code: "invalid_request_email", Description: "Invalid email format"},
+			expCode: http.StatusBadRequest,
 		},
 		{
 			scenario: "user already exists",
@@ -51,7 +52,7 @@ func TestCreateUser(t *testing.T) {
 			mockServiceInput:  "a@gmail.com",
 			mockServiceOutput: false,
 			mockServiceErr:    errors.New("email already exists"),
-			expResult:         response.Error{Status: http.StatusBadRequest, Code: "create_user", Description: "email already exists"},
+			expErr:            response.Error{Status: http.StatusBadRequest, Code: "create_user", Description: "email already exists"},
 			expCode:           http.StatusBadRequest,
 		},
 	}
@@ -63,7 +64,6 @@ func TestCreateUser(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-
 			// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
 			rr := httptest.NewRecorder()
 			mockResolver := CreateResolver{
@@ -79,9 +79,13 @@ func TestCreateUser(t *testing.T) {
 
 			handler := http.HandlerFunc(mockResolver.CreateUser)
 			handler.ServeHTTP(rr, req)
-
-			byteResult, _ := json.Marshal(tc.expResult)
-			assert.Equal(t, string(byteResult), rr.Body.String())
+			var byteRs []byte
+			if tc.expErr.Code != "" {
+				byteRs, _ = json.Marshal(tc.expErr)
+			} else {
+				byteRs, _ = json.Marshal(tc.expResult)
+			}
+			assert.Equal(t, string(byteRs), rr.Body.String())
 			assert.Equal(t, tc.expCode, rr.Code)
 		})
 	}

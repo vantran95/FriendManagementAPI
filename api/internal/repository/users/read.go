@@ -10,9 +10,7 @@ func (r RepositoryImpl) GetAllUsers() (*[]models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	users := make([]models.User, 0)
-
 	for result.Next() {
 		var id int64
 		var email string
@@ -30,10 +28,8 @@ func (r RepositoryImpl) GetUser(email string) (*models.User, error) {
 	var id int64
 	var userEmail string
 	err := r.DB.QueryRow("select id, email from users where email=$1", email).Scan(&id, &userEmail)
-
 	if err != nil {
 		return nil, err
 	}
-
 	return &models.User{ID: id, Email: userEmail}, nil
 }

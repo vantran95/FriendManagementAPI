@@ -26,6 +26,5 @@ func (s ServiceImpl) CreateUser(email string) (bool, error) {
 	} else {
 		return false, errors.New("user already exist")
 	}
-
 	return true, nil
 }

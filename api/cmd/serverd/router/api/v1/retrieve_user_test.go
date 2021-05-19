@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/cmd/serverd/router/api/response"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/s3corp-github/S3_FriendManagement_VanTran/api/internal/models"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGetAllUsers(t *testing.T) {
@@ -17,7 +17,8 @@ func TestGetAllUsers(t *testing.T) {
 		scenario          string
 		mockServiceOutput []models.User
 		mockServiceErr    error
-		expResult         interface{}
+		expResult         userResponse
+		expErr            response.Error
 		expCode           int
 	}{
 		{
@@ -42,8 +43,8 @@ func TestGetAllUsers(t *testing.T) {
 		{
 			scenario:       "do not have users",
 			mockServiceErr: errors.New("do not have users"),
-			expResult: response.Error{
-				Status:      400,
+			expErr: response.Error{
+				Status:      http.StatusBadRequest,
 				Code:        "get_all_users",
 				Description: "do not have users",
 			},
@@ -57,7 +58,6 @@ func TestGetAllUsers(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-
 			// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
 			rr := httptest.NewRecorder()
 			mockResolver := RetrieveResolver{
@@ -69,13 +69,15 @@ func TestGetAllUsers(t *testing.T) {
 					}{Output: tc.mockServiceOutput, Err: tc.mockServiceErr},
 				},
 			}
-
 			handler := http.HandlerFunc(mockResolver.GetAllUsers)
 			handler.ServeHTTP(rr, req)
-
-			byteResult, _ := json.Marshal(tc.expResult)
-
-			assert.Equal(t, string(byteResult), rr.Body.String())
+			var byteRs []byte
+			if tc.expErr.Code != "" {
+				byteRs, _ = json.Marshal(tc.expErr)
+			} else {
+				byteRs, _ = json.Marshal(tc.expResult)
+			}
+			assert.Equal(t, string(byteRs), rr.Body.String())
 			assert.Equal(t, tc.expCode, rr.Code)
 		})
 	}

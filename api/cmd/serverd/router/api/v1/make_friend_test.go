@@ -20,7 +20,8 @@ func TestMakeFriend(t *testing.T) {
 		mockTargetEmailInput  string
 		mockServiceOutput     bool
 		mockServiceErr        error
-		expResult             interface{}
+		expResult             response.Result
+		expErr                response.Error
 		expCode               int
 	}{
 		{
@@ -45,8 +46,8 @@ func TestMakeFriend(t *testing.T) {
 			mockTargetEmailInput:  "b@gmail.com",
 			mockServiceOutput:     false,
 			mockServiceErr:        errors.New("user does not exists"),
-			expResult: response.Error{
-				Status:      400,
+			expErr: response.Error{
+				Status:      http.StatusBadRequest,
 				Code:        "make_friend",
 				Description: "user does not exists",
 			},
@@ -61,10 +62,22 @@ func TestMakeFriend(t *testing.T) {
 			mockTargetEmailInput:  "b@gmail.com",
 			mockServiceOutput:     false,
 			mockServiceErr:        errors.New("already friended"),
-			expResult: response.Error{
-				Status:      400,
+			expErr: response.Error{
+				Status:      http.StatusBadRequest,
 				Code:        "make_friend",
 				Description: "already friended",
+			},
+			expCode: http.StatusBadRequest,
+		},
+		{
+			scenario: "Invalid request body",
+			mockAPIInput: createFriendInput{
+				Friends: []string{"a@gmail.com"},
+			},
+			expErr: response.Error{
+				Status:      http.StatusBadRequest,
+				Code:        "invalid_request_body",
+				Description: "Invalid request body",
 			},
 			expCode: http.StatusBadRequest,
 		},
@@ -91,12 +104,15 @@ func TestMakeFriend(t *testing.T) {
 					}{RequestInput: tc.mockRequestEmailInput, TargetInput: tc.mockTargetEmailInput, Output: tc.mockServiceOutput, Err: tc.mockServiceErr},
 				},
 			}
-
 			handler := http.HandlerFunc(mockResolver.MakeFriend)
 			handler.ServeHTTP(rr, req)
-
-			byteResult, _ := json.Marshal(tc.expResult)
-			assert.Equal(t, string(byteResult), rr.Body.String())
+			var byteRs []byte
+			if tc.expErr.Code != "" {
+				byteRs, _ = json.Marshal(tc.expErr)
+			} else {
+				byteRs, _ = json.Marshal(tc.expResult)
+			}
+			assert.Equal(t, string(byteRs), rr.Body.String())
 			assert.Equal(t, tc.expCode, rr.Code)
 		})
 	}

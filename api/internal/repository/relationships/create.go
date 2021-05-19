@@ -12,6 +12,5 @@ func (r RepositoryImpl) CreateRelationship(relationship models.Relationship) (bo
 	}
 
 	_, err = query.Exec(relationship.RequestID, relationship.TargetID, relationship.Status)
-
 	return err == nil, err
 }

@@ -54,7 +54,6 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
 			defer dbTest.Close()
-
 			stmt := `select x.id, x.request_id, x.target_id, x.status
 			from relationships x
 			where x.request_id in (%s, %s)
@@ -76,13 +75,11 @@ func TestRepositoryImpl_GetRelationships(t *testing.T) {
 				}
 				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
 			}
-
 			dbMock := &RepositoryImpl{dbTest}
 			result, err := dbMock.GetRelationships(tc.requestID, tc.targetID)
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)
-				assert.NoError(t, err)
+				assert.NoError(t, tc.expErr, err)
 			} else {
 				assert.Error(t, tc.expErr, err)
 			}
@@ -152,13 +149,11 @@ func TestRepositoryImpl_GetFriendsList(t *testing.T) {
 				}
 				mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
 			}
-
 			dbMock := &RepositoryImpl{dbTest}
 			result, err := dbMock.GetFriendsList(tc.emailID)
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)
-				assert.NoError(t, err)
+				assert.NoError(t, tc.expErr, err)
 			} else {
 				assert.Error(t, tc.expErr, err)
 			}

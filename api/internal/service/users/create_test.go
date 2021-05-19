@@ -52,17 +52,16 @@ func TestServiceImpl_CreateUser(t *testing.T) {
 					Err    error
 				}{Input: tc.input, Output: tc.mockCreateUserOutput, Err: tc.mockErr},
 			}
-
 			service := ServiceImpl{
 				CreateRepo: mockRepo,
 			}
-
 			rs, err := service.CreateUser(tc.input)
 
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
-				assert.NoError(t, tc.mockErr, err)
+				assert.NoError(t, tc.expErr, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}

@@ -57,17 +57,15 @@ func TestServiceImpl_GetAllUsers(t *testing.T) {
 					Err    error
 				}{Output: &tc.mockGetAllUsersOutput, Err: tc.mockErr},
 			}
-
 			service := ServiceImpl{
 				RetrieveRepo: mockRepo,
 			}
-
 			rs, err := service.GetAllUsers()
-
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
-				assert.NoError(t, tc.mockErr, err)
+				assert.NoError(t, tc.expErr, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}
@@ -107,17 +105,16 @@ func TestServiceImpl_GetUser(t *testing.T) {
 					Err    error
 				}{Input: tc.input, Output: tc.mockGetUserOutput, Err: tc.mockErr},
 			}
-
 			service := ServiceImpl{
 				RetrieveRepo: mockRepo,
 			}
-
 			rs, err := service.GetUser(tc.input)
 
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, rs)
-				assert.NoError(t, tc.mockErr, err)
+				assert.NoError(t, tc.expErr, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}

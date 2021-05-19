@@ -24,7 +24,6 @@ type (
 // GetAllUsers is endpoint to retrieve users list
 func (rsv RetrieveResolver) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	var resErr = response.Error{Status: http.StatusBadRequest}
-
 	users, err := rsv.UserService.GetAllUsers()
 	if err != nil {
 		resErr.Code = "get_all_users"
@@ -36,6 +35,5 @@ func (rsv RetrieveResolver) GetAllUsers(w http.ResponseWriter, r *http.Request) 
 	for _, u := range users {
 		userEmails = append(userEmails, u.Email)
 	}
-
 	response.ResponseJson(w, userResponse{Success: true, Users: userEmails, Count: len(userEmails)})
 }

@@ -35,15 +35,11 @@ type (
 // GetFriendsList is endpoint to retrieve friends list connected with email
 func (rsv RetrieveResolver) GetFriendsList(w http.ResponseWriter, r *http.Request) {
 	var input friendsInput
-	var resErr = response.Error{Status: http.StatusBadRequest}
-
+	var resErr = response.Error{Status: http.StatusBadRequest, Code: "invalid_request_body", Description: "Invalid request body"}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		resErr.Code = "invalid_request_body"
-		resErr.Description = "Invalid request body"
 		response.ResponseJson(w, resErr)
 		return
 	}
-
 	results, err := rsv.RelationshipService.GetFriendsList(input.Email)
 	if err != nil {
 		resErr.Code = "get_friend_list"
@@ -51,24 +47,23 @@ func (rsv RetrieveResolver) GetFriendsList(w http.ResponseWriter, r *http.Reques
 		response.ResponseJson(w, resErr)
 		return
 	}
-
 	response.ResponseJson(w, friendsResponse{Success: true, Friends: results, Count: len(results)})
 }
 
 // GetCommonFriends is endpoint to retrieve a common friends list.
 func (rsv RetrieveResolver) GetCommonFriends(w http.ResponseWriter, r *http.Request) {
 	var input commonFriendsInput
-	var resErr = response.Error{Status: http.StatusBadRequest}
-
+	var resErr = response.Error{Status: http.StatusBadRequest, Code: "invalid_request_body", Description: "Invalid request body"}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		resErr.Code = "invalid_request_body"
-		resErr.Description = "Invalid request body"
+		response.ResponseJson(w, resErr)
+		return
+	}
+	if len(input.Friends) < 2 {
 		response.ResponseJson(w, resErr)
 		return
 	}
 	requestEmail := input.Friends[0]
 	targetEmail := input.Friends[1]
-
 	results, err := rsv.RelationshipService.GetCommonFriends(requestEmail, targetEmail)
 	if err != nil {
 		resErr.Code = "get_common_friends"
@@ -76,6 +71,5 @@ func (rsv RetrieveResolver) GetCommonFriends(w http.ResponseWriter, r *http.Requ
 		response.ResponseJson(w, resErr)
 		return
 	}
-
 	response.ResponseJson(w, friendsResponse{Success: true, Friends: results, Count: len(results)})
 }

@@ -45,10 +45,11 @@ func TestRepositoryImpl_CreateUser(t *testing.T) {
 			}
 			dbMock := &RepositoryImpl{dbTest}
 			result, err := dbMock.CreateUser(tc.input)
-			assert.Equal(t, tc.expErr, tc.mockErr)
 			if tc.expErr == nil {
 				assert.Equal(t, tc.expResult, result)
-				assert.NoError(t, err)
+				assert.NoError(t, tc.expErr, err)
+			} else {
+				assert.Error(t, tc.expErr, err)
 			}
 		})
 	}

@@ -29,13 +29,11 @@ type (
 // ResponseJson attempts to send a response
 func ResponseJson(w http.ResponseWriter, object interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-
 	respBytes, err := json.Marshal(object)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 	var status int
 	switch werr := object.(type) {
 	case Error:
@@ -44,7 +42,6 @@ func ResponseJson(w http.ResponseWriter, object interface{}) {
 	default:
 		status = http.StatusOK
 	}
-
 	w.WriteHeader(status)
 	w.Write(respBytes)
 }

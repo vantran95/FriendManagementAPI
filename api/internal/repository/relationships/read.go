@@ -59,7 +59,6 @@ func (r RepositoryImpl) GetFriendsList(emailID int64) (*[]models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	users := make([]models.User, 0)
 	for results.Next() {
 		var id int64

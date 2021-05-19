@@ -16,11 +16,9 @@ import (
 // HandleRequest handle all request route
 func HandleRequest(db *sql.DB) {
 	routes := chi.NewRouter()
-
 	// Route for user API
 	routes.Get("/v1/users", initRetrieveResolver(db).GetAllUsers)
 	routes.Post("/v1/users/create-user", initCreateResolver(db).CreateUser)
-
 	// Route for relationship API
 	routes.Post("/v1/friend/create-friend", initCreateResolver(db).MakeFriend)
 	routes.Post("/v1/friend/get-friends-list", initRetrieveResolver(db).GetFriendsList)
@@ -39,7 +37,7 @@ func initRetrieveResolver(db *sql.DB) v1.RetrieveResolver {
 		RelationshipService: relationshipService.ServiceImpl{
 			CreateRepo:   relationshipRepo.RepositoryImpl{DB: db},
 			RetrieveRepo: relationshipRepo.RepositoryImpl{DB: db},
-			UserRetriever: userService.ServiceImpl{
+			UserRetrieverRepo: userService.ServiceImpl{
 				CreateRepo:   userRepo.RepositoryImpl{DB: db},
 				RetrieveRepo: userRepo.RepositoryImpl{DB: db},
 			},
@@ -57,7 +55,7 @@ func initCreateResolver(db *sql.DB) v1.CreateResolver {
 		RelationshipService: relationshipService.ServiceImpl{
 			CreateRepo:   relationshipRepo.RepositoryImpl{DB: db},
 			RetrieveRepo: relationshipRepo.RepositoryImpl{DB: db},
-			UserRetriever: userService.ServiceImpl{
+			UserRetrieverRepo: userService.ServiceImpl{
 				CreateRepo:   userRepo.RepositoryImpl{DB: db},
 				RetrieveRepo: userRepo.RepositoryImpl{DB: db},
 			},
